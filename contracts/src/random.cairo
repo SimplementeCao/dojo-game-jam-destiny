@@ -1,33 +1,89 @@
-use core::{integer::{U256DivRem, u256_try_as_non_zero}};
-use starknet::get_block_timestamp;
+use core::pedersen::pedersen;
+use starknet::{ContractAddress, get_contract_address};
 
-const U128_MAX: u128 = 340282366920938463463374607431768211455;
-const LCG_PRIME: u128 = 281474976710656;
-
-pub fn get_random_hash() -> felt252 {
-    get_block_timestamp().into()
+#[derive(Copy, Drop, Serde)]
+#[dojo::model]
+pub struct Nonce {
+    #[key]
+    pub key: felt252,
+    pub value: u32,
 }
 
-pub fn get_entropy(felt_to_split: felt252) -> u128 {
-    let (_d, r) = U256DivRem::div_rem(
-        felt_to_split.into(), u256_try_as_non_zero(U128_MAX.into()).unwrap(),
-    );
-
-    r.try_into().unwrap() % LCG_PRIME
+#[derive(Copy, Drop, Serde)]
+struct Random {
+    seed: felt252,
+    nonce: usize,
 }
 
-pub fn LCG(seed: u128) -> u128 {
-    let a = 25214903917;
-    let c = 11;
-    let m = LCG_PRIME;
-
-    (a * seed + c) % m
-}
-
-pub fn get_random_number_zero_indexed(seed: u128, range: u32) -> u32 {
-    if range == 0 {
-        return 0;
+#[generate_trait]
+impl RandomImpl of RandomTrait {
+    // one instance by contract, then passed by ref to sub fns
+    fn new() -> Random {
+        Random { seed: seed(get_contract_address()), nonce: 0 }
     }
 
-    (seed % range.into()).try_into().unwrap()
+    fn new_salt(nonce: u32) -> Random {
+        Random { seed: seed(get_contract_address()), nonce }
+    }
+
+    fn next_seed(ref self: Random) -> felt252 {
+        self.nonce += 1;
+        self.seed = pedersen(self.seed, self.nonce.into());
+        self.seed
+    }
+
+    fn bool(ref self: Random) -> bool {
+        let seed: u256 = self.next_seed().into();
+        seed.low % 2 == 0
+    }
+
+    fn felt(ref self: Random) -> felt252 {
+        let tx_hash = starknet::get_tx_info().unbox().transaction_hash;
+        let seed = self.next_seed();
+        pedersen(tx_hash, seed)
+    }
+
+    fn occurs(ref self: Random, likelihood: u8) -> bool {
+        if likelihood == 0 {
+            return false;
+        }
+
+        let result = self.between(0, 100);
+        result <= likelihood.try_into().unwrap()
+    }
+
+    fn between(ref self: Random, min: i32, max: i32) -> i32 {
+        assert!(min < max, "Random: min must be less than max");
+        let seed: u256 = self.next_seed().into();
+
+        if min == max {
+            return min;
+        }
+
+        if min >= 0 && max >= 0 {
+            let range: u128 = (max - min + 1).try_into().unwrap();
+            let rand = (seed.low % range) + min.try_into().unwrap();
+            rand.try_into().unwrap()
+        } else if min < 0 && max < 0 {
+            let min_pos = -min;
+            let max_pos = -max;
+            let range: u128 = (min_pos - max_pos + 1).try_into().unwrap();
+            let rand = (seed.low % range) + min.try_into().unwrap();
+            -rand.try_into().unwrap()
+        } else {
+            let min_pos = -min;
+            let range: u128 = (min_pos + max + 1).try_into().unwrap();
+            let pre_rand = seed.low % range;
+
+            if pre_rand <= (min_pos).try_into().unwrap() {
+                -pre_rand.try_into().unwrap()
+            } else {
+                (pre_rand - min_pos.try_into().unwrap()).try_into().unwrap()
+            }
+        }
+    }
+}
+
+fn seed(salt: ContractAddress) -> felt252 {
+    pedersen(starknet::get_tx_info().unbox().transaction_hash, salt.into())
 }

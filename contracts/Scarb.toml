@@ -1,6 +1,6 @@
 [package]
 cairo-version = "=2.12.2"
-name = "dojo_sheep_a_sheep"
+name = "destiny"
 version = "1.0.0"
 edition = "2024_07"
 
@@ -8,11 +8,8 @@ edition = "2024_07"
 sierra-replace-ids = true
 
 [scripts]
+build = "clear; scarb fmt; sozo build"
 migrate = "sozo build && sozo migrate"
-initialize = "sozo execute dojo_sheep_a_sheep-sheep_a_sheep_actions initialize_game_settings --wait"
-start-game = "sozo execute dojo_sheep_a_sheep-sheep_a_sheep_actions start_new_game --wait"
-daily-challenge = "sozo execute dojo_sheep_a_sheep-sheep_a_sheep_actions start_daily_challenge --wait"
-
 
 [dependencies]
 dojo = "1.7.0"

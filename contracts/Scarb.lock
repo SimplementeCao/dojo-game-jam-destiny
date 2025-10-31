@@ -2,6 +2,15 @@
 version = 1
 
 [[package]]
+name = "destiny"
+version = "1.0.0"
+dependencies = [
+ "dojo",
+ "dojo_cairo_macros",
+ "dojo_cairo_test",
+]
+
+[[package]]
 name = "dojo"
 version = "1.7.2"
 source = "registry+https://scarbs.xyz/"
@@ -23,13 +32,4 @@ source = "registry+https://scarbs.xyz/"
 checksum = "sha256:07468e70a3ead06a352b3cc2fb52a88447b921cdc26474290950f3f95ce4f295"
 dependencies = [
  "dojo",
-]
-
-[[package]]
-name = "dojo_sheep_a_sheep"
-version = "1.0.0"
-dependencies = [
- "dojo",
- "dojo_cairo_macros",
- "dojo_cairo_test",
 ]
