@@ -1,0 +1,72 @@
+# Panda Panda - Dojo Edition
+
+A tile-matching game built with **Dojo** and **React** on **Starknet** blockchain.
+
+## What is it?
+
+Panda Panda is an addictive puzzle game where you eliminate tiles by matching groups of 3 identical tiles. This version is fully integrated with Dojo, meaning:
+
+- 🔗 Your progress is saved on-chain
+- 🎮 Every game is verifiable 
+- 🏆 Rankings are permanent
+- ⚡ Uses Cartridge Controller for seamless experience
+
+## 🎯 How to Play
+
+1. **Connect your wallet** using Cartridge Controller
+2. **Start a new game** from the home screen
+3. **Select accessible tiles** (glowing ones) to add them to your temporal slot
+4. **Match 3 identical tiles** to eliminate them and score points
+5. **Clear all tiles** before filling your slot (max 7 tiles)
+
+## 🚀 Local Development
+
+### Prerequisites
+```bash
+# Install Dojo
+curl -L https://install.dojoengine.org | bash
+dojoup
+```
+
+### Setup
+
+1. **Start local blockchain**:
+```bash
+make katana
+```
+
+2. **Deploy contracts and setup**:
+```bash
+make setup
+```
+
+3. **Frontend setup**:
+```bash
+cd client
+npm install
+# Update .env file with your environment variables
+npm run dev
+```
+
+## 🔧 Frontend Configuration
+
+### Environment Variables
+Update `client/.env` with your configuration:
+```bash
+VITE_RPC_URL=http://localhost:5050
+VITE_TORII_URL=http://localhost:8080
+```
+
+### Slot Configuration
+If you want to use slot functionality, update both:
+- Environment variables in `.env`
+- Vite configuration in `vite.config.ts`
+
+## 🏗️ Project Structure
+
+```
+sheep-a-sheep/
+├── contracts/          # Dojo contracts (Cairo)
+├── client/             # React frontend
+└── Makefile           # Build scripts
+```
