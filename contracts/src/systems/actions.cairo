@@ -1,17 +1,26 @@
+use starknet::ContractAddress;
+use crate::models::Battle;
+
 #[starknet::interface]
 pub trait IActions<T> {
+    fn get_player_battle(self: @T, player: ContractAddress) -> Battle;
+    fn get_hero_skills(self: @T, hero_id: u32) -> Span<u32>;
+    fn get_monster_skills(self: @T, monster_id: u32) -> Span<u32>;
     fn start_battle(ref self: T, level: u32);
-    fn play(ref self: T, battle_id: u32, actions: Span<(u32, u32, u32)>);
+    fn play(ref self: T, actions: Span<(u32, u32, u32)>);
+    fn initialize(ref self: T);
 }
+
 
 #[dojo::contract]
 pub mod actions {
     use dojo::event::EventStorage;
     use dojo::model::ModelStorage;
     use dojo::world::WorldStorage;
+    use starknet::{ContractAddress, get_caller_address};
     use crate::models::{
-        Battle, BuffEvent, Character, CharacterStatus, DamageEvent, DebuffEvent, Destiny, HealEvent,
-        MissEvent, PlayerLoseEvent, PlayerWinEvent,
+        Battle, BuffEvent, Character, CharacterStatus, CurrentBattle, DamageEvent, DebuffEvent,
+        Destiny, HealEvent, MissEvent, PlayerLoseEvent, PlayerWinEvent,
     };
     use crate::random::{Random, RandomTrait};
 
@@ -29,6 +38,13 @@ pub mod actions {
 
             world
                 .write_model(
+                    @CurrentBattle {
+                        player: starknet::get_caller_address(), battle_id: destiny.total_battles,
+                    },
+                );
+
+            world
+                .write_model(
                     @Battle {
                         id: destiny.total_battles,
                         level,
@@ -40,10 +56,12 @@ pub mod actions {
                 );
         }
 
-        fn play(ref self: ContractState, battle_id: u32, actions: Span<(u32, u32, u32)>) {
+        fn play(ref self: ContractState, actions: Span<(u32, u32, u32)>) {
             let mut world = self.world_default();
             let mut random = RandomTrait::new();
-            let battle: Battle = world.read_model(battle_id);
+            let current_battle: CurrentBattle = world.read_model(get_caller_address());
+            let battle_id = current_battle.battle_id;
+            let battle: Battle = world.read_model(current_battle.battle_id);
 
             for action in actions {
                 let (hero_index, monster_index, action_id) = *action;
@@ -63,6 +81,7 @@ pub mod actions {
 
             if monsters_alive_indexes.is_empty() {
                 world.emit_event(@PlayerWinEvent { battle_id, player: battle.player });
+                world.write_model(@CurrentBattle { player: battle.player, battle_id: 0 });
                 return;
             }
 
@@ -118,8 +137,149 @@ pub mod actions {
 
             if heroes_alive_indexes.is_empty() {
                 world.emit_event(@PlayerLoseEvent { battle_id, player: battle.player });
+                world.write_model(@CurrentBattle { player: battle.player, battle_id: 0 });
                 return;
             }
+        }
+
+        fn get_player_battle(self: @ContractState, player: ContractAddress) -> Battle {
+            let mut world = self.world_default();
+            let current_battle: CurrentBattle = world.read_model(player);
+            world.read_model(current_battle.battle_id)
+        }
+
+        fn get_hero_skills(self: @ContractState, hero_id: u32) -> Span<u32> {
+            let mut world = self.world_default();
+            let hero: Character = world.read_model(hero_id);
+            hero.skills
+        }
+
+        fn get_monster_skills(self: @ContractState, monster_id: u32) -> Span<u32> {
+            let mut world = self.world_default();
+            let monster: Character = world.read_model(monster_id);
+            monster.skills
+        }
+
+        fn initialize(ref self: ContractState) {
+            let mut world = self.world_default();
+            world.write_model(@Destiny { key: 1, total_battles: 0 });
+
+            world
+                .write_model(
+                    @Character {
+                        id: 1,
+                        name: "Aloy",
+                        skills: [
+                            POWER_ATTACK_ACTION_ID, BUFF_EVASION_ACTION_ID, BUFF_ATTACK_ACTION_ID,
+                        ]
+                            .span(),
+                        health: 200,
+                        attack: 20,
+                        defense: 25,
+                        critical_chance: 25,
+                        evasion: 15,
+                    },
+                );
+
+            world
+                .write_model(
+                    @Character {
+                        id: 2,
+                        name: "Amber",
+                        skills: [
+                            BASIC_ATTACK_ACTION_ID, FLAME_ATTACK_ACTION_ID, MASS_HEAL_ACTION_ID,
+                        ]
+                            .span(),
+                        health: 150,
+                        attack: 15,
+                        defense: 15,
+                        critical_chance: 15,
+                        evasion: 15,
+                    },
+                );
+
+            world
+                .write_model(
+                    @Character {
+                        id: 3,
+                        name: "Ganyu",
+                        skills: [
+                            FLAME_ATTACK_ACTION_ID, DEBUFF_DEFENSE_ACTION_ID,
+                            BUFF_CRITICAL_CHANCE_ACTION_ID,
+                        ]
+                            .span(),
+                        health: 180,
+                        attack: 20,
+                        defense: 20,
+                        critical_chance: 20,
+                        evasion: 20,
+                    },
+                );
+
+            world
+                .write_model(
+                    @Character {
+                        id: 4,
+                        name: "Skeleton",
+                        skills: [BASIC_ATTACK_ACTION_ID, BUFF_CRITICAL_CHANCE_ACTION_ID].span(),
+                        health: 100,
+                        attack: 15,
+                        defense: 10,
+                        critical_chance: 10,
+                        evasion: 10,
+                    },
+                );
+
+            world
+                .write_model(
+                    @Character {
+                        id: 5,
+                        name: "Assassin",
+                        skills: [POWER_ATTACK_ACTION_ID, DEBUFF_DEFENSE_ACTION_ID].span(),
+                        health: 70,
+                        attack: 10,
+                        defense: 15,
+                        critical_chance: 25,
+                        evasion: 25,
+                    },
+                );
+
+            world
+                .write_model(
+                    @Character {
+                        id: 6,
+                        name: "Overlord",
+                        skills: [
+                            FLAME_ATTACK_ACTION_ID, DEBUFF_ATTACK_ACTION_ID,
+                            DEBUFF_CRITICAL_CHANCE_ACTION_ID, DEBUFF_DEFENSE_ACTION_ID,
+                            DEBUFF_EVASION_ACTION_ID,
+                        ]
+                            .span(),
+                        health: 100,
+                        attack: 25,
+                        defense: 25,
+                        critical_chance: 5,
+                        evasion: 10,
+                    },
+                );
+
+            world
+                .write_model(
+                    @Character {
+                        id: 7,
+                        name: "Ornstein",
+                        skills: [
+                            BASIC_ATTACK_ACTION_ID, POWER_ATTACK_ACTION_ID, FLAME_ATTACK_ACTION_ID,
+                            DEBUFF_DEFENSE_ACTION_ID,
+                        ]
+                            .span(),
+                        health: 180,
+                        attack: 30,
+                        defense: 20,
+                        critical_chance: 10,
+                        evasion: 10,
+                    },
+                );
         }
     }
 
@@ -157,6 +317,11 @@ pub mod actions {
                 } else {
                     0
                 };
+                damage = damage
+                    + random
+                        .between(0, (from_status.attack / 2).try_into().unwrap())
+                        .try_into()
+                        .unwrap();
 
                 let critical_hit = random
                     .between(0, 100) < (25 + from_status.critical_chance)

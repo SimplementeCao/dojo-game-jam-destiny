@@ -92,7 +92,6 @@ pub struct MissEvent {
     pub to_idx: u32,
 }
 
-
 #[derive(Copy, Drop, Serde)]
 #[dojo::event]
 pub struct HealEvent {
