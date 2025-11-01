@@ -20,7 +20,7 @@ pub mod actions {
     use starknet::{ContractAddress, get_caller_address};
     use crate::models::{
         Battle, BuffEvent, Character, CharacterStatus, CurrentBattle, DamageEvent, DebuffEvent,
-        Destiny, HealEvent, MissEvent, PlayerLoseEvent, PlayerWinEvent,
+        Destiny, HealEvent, MissEvent, PlayerLoseEvent, PlayerWinEvent, BattleCreatedEvent
     };
     use crate::random::{Random, RandomTrait};
 
@@ -54,6 +54,8 @@ pub mod actions {
                         monsters_indexes,
                     },
                 );
+
+            world.emit_event(@BattleCreatedEvent { player: starknet::get_caller_address(), id: destiny.total_battles });
         }
 
         fn play(ref self: ContractState, actions: Span<(u32, u32, u32)>) {

@@ -2,8 +2,6 @@ import { useAccount } from "@starknet-react/core";
 import { useDojoSDK } from "@dojoengine/sdk/react";
 import { useState } from "react";
 import type { BigNumberish } from "starknet";
-import type { Vec2 } from "../dojo/generated/typescript/models.gen";
-import { dojoConfig } from '../dojo/dojoConfig'
 
 export const useGameActions = () => {
   const { account } = useAccount();
@@ -12,11 +10,7 @@ export const useGameActions = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  /**
-   * Starts a new game session
-   * @returns Object with transaction hash and game ID
-   */
-  const startNewGame = async (): Promise<{transaction_hash: string, game_id: number} | null> => {
+  const startBattle = async (level: BigNumberish): Promise<{transaction_hash: string, battle_id: BigNumberish} | null> => {
     if (!account) {
       setError("No account connected");
       return null;
@@ -26,95 +20,83 @@ export const useGameActions = () => {
     setError(null);
 
     try {
-      console.log('creando juego');
-      const response = await client.actions.startNewGame(account);
+      console.log('Creating new battle');
+      console.log("account:", account.address, "level:", level);
+      console.log("client:", client);
+      const response = await client.actions.startBattle(account, level);
       const transaction_hash = response?.transaction_hash ?? "";
-
       const tx = await account.waitForTransaction(transaction_hash, {
         retryInterval: 100,
       });
 
       if (tx.isSuccess()) {
         const events = tx.events;
-        console.log("events", events);
-        // const gameIdHex = events[6].data[3];
-        const gameIdHex = events[147].data[3];
-        const gameId = parseInt(gameIdHex, 16);
+        console.log("[startBattle] - Events: ", events);
+        const id = 1;
         return {
           transaction_hash,
-          game_id: gameId,
+          battle_id: id,
         };
       } else {
-        console.error("Error creating game:", tx);
+        console.error("Creating new battle:", tx);
         setError("Transaction failed");
         return null;
       }
     } catch (err) {
-      console.error("Error starting game:", err);
-      setError("Failed to start game");
+      console.error("Creating new battle:", err);
+      setError("Failed to start battle");
       return null;
     } finally {
       setLoading(false);
     }
   };
 
-  /**
-   * Selects a tile in the game - now runs in background without blocking UI
-   * @param gameId Game ID
-   * @param position Tile position
-   * @param layer Tile layer
-   * @returns Transaction hash
-   */
-  const selectTile = async (
-    gameId: BigNumberish,
-    position: Vec2,
-    layer: BigNumberish
-  ): Promise<string | null> => {
+  const play = async (
+    actions: Array<[BigNumberish, BigNumberish, BigNumberish]>,
+  ): Promise<{transaction_hash: string} | null> => {
     if (!account) {
       setError("No account connected");
       return null;
     }
 
-    // No setLoading(true) aquí - permitir que la transacción se ejecute en segundo plano
+    setLoading(true);
     setError(null);
 
     try {
-      console.log("=== SELECTING TILE (BACKGROUND) ===");
-      console.log("Game ID:", gameId);
-      console.log("Position:", position);
-      console.log("Layer:", layer);
+      console.log("Playing actions");
       console.log("Account:", account.address);
+      console.log("Actions:", actions);
       
-      // Ejecutar la transacción en segundo plano sin esperar
-      const transactionPromise = client.actions.selectTile(account, gameId, position, layer);
-      
-      // Devolver inmediatamente una promesa que se resuelve con el hash
-      transactionPromise.then((result: any) => {
-        console.log("Background transaction completed:", result);
-      }).catch((err: any) => {
-        console.error("Background transaction failed:", err);
-        setError(`Failed to select tile: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      const response = await client.actions.play(account, actions);
+      const transaction_hash = response?.transaction_hash ?? "";
+      const tx = await account.waitForTransaction(transaction_hash, {
+        retryInterval: 100,
       });
-      
-      // Devolver un hash temporal o null inmediatamente
-      return "pending";
+
+      if (tx.isSuccess()) {
+        const events = tx.events;
+        console.log("[play] - Events: ", events);
+        return transaction_hash;
+      } else {
+        console.error("[play] - Transaction failed:", tx);
+        setError("Transaction failed");
+        return null;
+      }
     } catch (err) {
-      console.error("Error selecting tile:", err);
-      setError(`Failed to select tile: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      console.error("[play] - Error playing actions:", err);
+      setError(`Failed to play actions: ${err instanceof Error ? err.message : 'Unknown error'}`);
       return null;
+    } finally {
+      setLoading(false);
     }
   };
 
   return {
-    // Actions
-    startNewGame,
-    selectTile,
-    
-    // State
+    startBattle,
+    play,
+
     loading,
     error,
-    
-    // Utils
     clearError: () => setError(null),
   };
 }; 

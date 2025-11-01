@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { Tile } from '../dojo/generated/typescript/models.gen';
+import type { Tile } from '../dojo/models.gen';
 
 // Helper function to convert BigNumberish to number
 const toNumber = (value: any): number => {

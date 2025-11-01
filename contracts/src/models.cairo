@@ -141,3 +141,11 @@ pub struct PlayerLoseEvent {
     pub player: ContractAddress,
 }
 
+#[derive(Copy, Drop, Serde)]
+#[dojo::event]
+pub struct BattleCreatedEvent {
+    #[key]
+    pub player: ContractAddress,
+    pub id: u32,
+}
+

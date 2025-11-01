@@ -1,15 +1,12 @@
 import { type PropsWithChildren } from "react";
-import { Chain } from "@starknet-react/chains";
-import { jsonRpcProvider, StarknetConfig, voyager } from "@starknet-react/core";
-// import {
-//   predeployedAccounts,
-//   type PredeployedAccountsConnector,
-// } from "@dojoengine/predeployed-connector";
+import type { Chain } from "@starknet-react/chains";
+import { Connector, jsonRpcProvider, StarknetConfig, voyager } from "@starknet-react/core";
 import { ControllerConnector } from "@cartridge/connector";
 import { num, shortString } from "starknet";
 import { getContractByName } from "@dojoengine/core";
 import { dojoConfig } from "../dojo/dojoConfig";
 import { SessionPolicies } from "@cartridge/presets";
+import { WalletSessionManager } from "../components/WalletSessionManager";
 
 const actions_contract = getContractByName(
   dojoConfig.manifest,
@@ -23,14 +20,19 @@ const policies: SessionPolicies = {
     [actions_contract.address]: {
       methods: [
         {
-          name: "start_new_game",
-          entrypoint: "start_new_game",
-          description: "Start a new sheep-a-sheep game",
+          name: "start_battle",
+          entrypoint: "start_battle",
+          description: "Start a new battle",
         },
         { 
-          name: "select_tile", 
-          entrypoint: "select_tile",
-          description: "Select a tile in the game"
+          name: "play", 
+          entrypoint: "play",
+          description: "Play a turn in the battle"
+        },
+        {
+          name: "initialize",
+          entrypoint: "initialize",
+          description: "Initialize the battle"
         },
       ],
     },
@@ -43,56 +45,50 @@ const controller = new ControllerConnector({
       rpcUrl: import.meta.env.VITE_RPC_URL || "http://localhost:5050",
     },
   ],
-  defaultChainId: shortString.encodeShortString("WP_DESTINY"),
+  defaultChainId: shortString.encodeShortString("WP_GAME_JAM_DESTINY"),
   policies,
 });
 
-const appchain: Chain = {
-  id: num.toBigInt(shortString.encodeShortString("WP_DESTINY")),
-  network: "katana",
-  name: "Destiny Chain",
+const slot: Chain = {
+  id: num.toBigInt(shortString.encodeShortString("WP_GAME_JAM_DESTINY")),
+  name: "Destiny",
+  network: "game-jam-destiny",
   rpcUrls: {
-    default: import.meta.env.VITE_RPC_URL || "http://localhost:5050",
-    public: import.meta.env.VITE_RPC_URL || "http://localhost:5050",
-  },
+    default: {
+      http: [import.meta.env.VITE_RPC_URL],
+    },
+    public: {
+      http: [import.meta.env.VITE_RPC_URL],
+    },
+  },  
   nativeCurrency: {
-    name: "Ethereum",
-    symbol: "ETH",
+    name: "Starknet",
+    symbol: "STRK",
     decimals: 18,
-    address: import.meta.env.VITE_ETH_ADDRESS,
+    address: "0x04718f5a0Fc34cC1AF16A1cdee98fFB20C31f5cD61D6Ab07201858f4287c938D",
   },
-};
+  paymasterRpcUrls: {
+    avnu: {
+       http: ["http://localhost:5050"],
+    },
+  },
+}
 
-// Configure RPC provider
 const provider = jsonRpcProvider({
   rpc: () => ({ nodeUrl: dojoConfig.rpcUrl }),
 });
 
 export default function StarknetProvider({ children }: PropsWithChildren) {
-  // const [connectors, setConnectors] = useState<PredeployedAccountsConnector[]>(
-  //   []
-  // );
-
-  // useEffect(() => {
-  //   if (connectors.length === 0) {
-  //     predeployedAccounts({
-  //       rpc: dojoConfig.rpcUrl as string,
-  //       id: "katana",
-  //       name: "Katana",
-  //     }).then((connectors) => {
-  //       console.log({ connectors });
-  //       setConnectors(connectors);
-  //     });
-  //   }
-  // }, [connectors]);
 
   return (
     <StarknetConfig
-      chains={[appchain]}
+      chains={[slot]}
       provider={provider}
-      connectors={[controller]}
+      connectors={[controller as unknown as Connector]}
       explorer={voyager}
+      autoConnect
     >
+      <WalletSessionManager />
       {children}
     </StarknetConfig>
   );

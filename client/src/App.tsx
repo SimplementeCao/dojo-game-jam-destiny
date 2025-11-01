@@ -144,11 +144,11 @@ function Home() {
   const navigate = useNavigate()
   const { account, address, status } = useAccount()
   const { connect, connectors } = useConnect()
-  const { startNewGame, loading: actionLoading, error: actionError } = useGameActions()
+  const { startBattle, loading: actionLoading, error: actionError } = useGameActions()
   
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
+ 
   // Estado de conexión de wallet
   const isConnected = !!account && status === 'connected'
   
@@ -185,8 +185,8 @@ function Home() {
   const displayError = error || actionError
 
   // Función para iniciar un nuevo juego o conectar wallet
-  const iniciarJuego = async () => {
-    console.log('🎮 iniciarJuego() llamado', { isConnected, account: !!account, status })
+  const startBattleCall = async () => {
+    console.log('🎮 startBattle() llamado', { isConnected, account: !!account, status })
     
     if (!isConnected) {
       // Si no hay cuenta conectada, conectar primero
@@ -219,12 +219,12 @@ function Home() {
     setError(null)
     
     try {
-      const result = await startNewGame()
+      const result = await startBattle(1)
       console.log('✅ Resultado del juego:', result)
       
       if (result) {
-        console.log('🚀 Navegando a:', `/demo/${result.game_id}`)
-        navigate(`/demo/${result.game_id}`)
+        console.log('🚀 Navegando a:', `/battle/${result.battle_id}`)
+        navigate(`/battle/${result.battle_id}`)
       } else {
         throw new Error('No se pudo crear el juego')
       }
@@ -272,7 +272,7 @@ function Home() {
       )}
       
       <HomeScreen 
-        iniciarJuego={iniciarJuego}
+        iniciarJuego={startBattleCall}
         loading={loading || actionLoading}
         connected={isConnected}
       />

@@ -8,18 +8,17 @@ import { dojoConfig } from './dojo/dojoConfig'
 import { init } from '@dojoengine/sdk'
 import { DojoSdkProvider } from '@dojoengine/sdk/react'
 import { setupWorld } from './dojo/generated/typescript/contracts.gen'
-import { SchemaType } from './dojo/generated/typescript/models.gen'
+import { SchemaType } from './dojo/models.gen.ts'
 import StarknetProvider from './store/starknetProvider.tsx'
 
 async function main() {
   const sdk = await init<SchemaType>({
     client: {
       toriiUrl: dojoConfig.toriiUrl,
-      relayUrl: dojoConfig.relayUrl,
       worldAddress: dojoConfig.manifest.world.address,
     },
     domain: {
-      name: 'DESTINY',
+      name: 'GAME_JAM_DESTINY',
       version: '1.0',
       chainId: 'KATANA',
       revision: '1',

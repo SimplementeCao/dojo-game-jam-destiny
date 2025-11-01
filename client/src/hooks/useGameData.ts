@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAccount } from "@starknet-react/core";
 import { useDojoSDK } from "@dojoengine/sdk/react";
-import type { Game, PlayerInventory, PlayerStats, Tile } from "../dojo/generated/typescript/models.gen";
+import type { Game, PlayerInventory, PlayerStats, Tile } from "../dojo/models.gen";
 import { CairoCustomEnum } from "starknet";
 import { dojoConfig } from '../dojo/dojoConfig'
 
