@@ -10,7 +10,8 @@ interface HomeScreenProps {
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ 
   iniciarJuego, 
-  loading = false
+  loading = false,
+  connected = false
 }) => {
   return (
     <div className="pantalla-inicio pantalla-inicio-background">
@@ -28,7 +29,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
         {loading ? (
           <div className="press-start">LOADING...</div>
         ) : (
-          <div className="press-start" onClick={iniciarJuego}>PRESS START</div>
+          <div className="press-start" onClick={iniciarJuego}>
+            {connected ? 'PRESS START' : 'CONNECT BY CONTROLLER'}
+          </div>
         )}
       </div>
     </div>

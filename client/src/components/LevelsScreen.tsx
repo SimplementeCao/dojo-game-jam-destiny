@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAccount, useDisconnect } from '@starknet-react/core'
 
@@ -15,10 +15,8 @@ function getInitialUnlocked(): LevelId {
 export default function LevelsScreen() {
   const navigate = useNavigate()
   const [unlocked, setUnlocked] = useState<LevelId>(getInitialUnlocked())
-  const { account, address, status } = useAccount()
+  const { account } = useAccount()
   const { disconnect } = useDisconnect()
-
-  const shortAddr = (addr?: string) => addr ? `${addr.slice(0,6)}...${addr.slice(-4)}` : ''
 
   useEffect(() => {
     localStorage.setItem('destiny_unlocked_level', String(unlocked))
@@ -37,7 +35,6 @@ export default function LevelsScreen() {
         <div className={`status-line ${account ? 'ok' : 'warn'}`}>
           {account ? 'CONNECTED' : 'DISCONNECTED'}
         </div>
-        <div className="status-addr">{shortAddr(address)}</div>
         <button
           className="status-action"
           onClick={() => account ? disconnect() : navigate('/')}
