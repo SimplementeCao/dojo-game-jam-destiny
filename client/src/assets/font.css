@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Press+Start+2P&display=swap');
+
+@font-face {
+  font-family: 'MedievalSharpLocal';
+  src: url('/font/MedievalSharp-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'MacondoLocal';
+  src: url('/font/Macondo-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CormorantUnicaseLocal';
+  src: url('/font/CormorantUnicase-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.press-start {
+  font-family: 'Courier New', monospace;
+  color: #ffffff;
+  text-shadow: 0 2px 0 #000, 0 0 10px rgba(0,0,0,0.6);
+  letter-spacing: 0.15em;
+  margin-top: 6px;
+  font-size: 30px;
+  animation: blink 1.2s steps(2, start) infinite;
+  cursor: pointer;
+}
+
+@keyframes blink { 50% { opacity: 0; } }
+
+.title-banner {
+  letter-spacing: 0.08em;
+  text-align: center;
+  line-height: 1.02;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: -15vh 0 0 0;
+}
+
+.titulo-text {
+  font-family: 'CormorantUnicaseLocal', 'MacondoLocal', 'MedievalSharpLocal', 'Press Start 2P';
+  text-transform: uppercase;
+  font-size: clamp(85px, 8vw, 186px);
+  letter-spacing: 4px;
+  background: linear-gradient(to bottom, #FFD84A 0%, #FF6E00 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  -webkit-text-stroke: 2px #ffffff;
+  text-shadow: 0 6px 12px rgba(0,0,0,0.35);
+}
+
+/* Media query para pantallas de desktop (768px en adelante) */
+@media (min-width: 768px) {
+  .title-banner-text {
+    font-size: 12rem; /* Aumentado de 8.2rem a 12rem */
+  }
+}
