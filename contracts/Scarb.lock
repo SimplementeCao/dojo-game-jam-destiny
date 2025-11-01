@@ -2,7 +2,7 @@
 version = 1
 
 [[package]]
-name = "destiny"
+name = "destiny2"
 version = "1.0.0"
 dependencies = [
  "dojo",

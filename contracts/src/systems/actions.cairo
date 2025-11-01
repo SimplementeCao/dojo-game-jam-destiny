@@ -19,8 +19,8 @@ pub mod actions {
     use dojo::world::WorldStorage;
     use starknet::{ContractAddress, get_caller_address};
     use crate::models::{
-        Battle, BuffEvent, Character, CharacterStatus, CurrentBattle, DamageEvent, DebuffEvent,
-        Destiny, HealEvent, MissEvent, PlayerLoseEvent, PlayerWinEvent, BattleCreatedEvent
+        Battle, BattleCreatedEvent, BuffEvent, Character, CharacterStatus, CurrentBattle,
+        DamageEvent, DebuffEvent, Destiny, HealEvent, MissEvent, PlayerLoseEvent, PlayerWinEvent,
     };
     use crate::random::{Random, RandomTrait};
 
@@ -33,8 +33,8 @@ pub mod actions {
             destiny.total_battles += 1;
             world.write_model(@destiny);
 
-            let heroes_indexes = self.set_battle_heroes(destiny.total_battles, level);
-            let monsters_indexes = self.set_battle_monsters(destiny.total_battles, level);
+            let heroes_ids = self.set_battle_heroes(destiny.total_battles, level);
+            let monsters_ids = self.set_battle_monsters(destiny.total_battles, level);
 
             world
                 .write_model(
@@ -50,12 +50,17 @@ pub mod actions {
                         level,
                         player: starknet::get_caller_address(),
                         is_finished: false,
-                        heroes_indexes,
-                        monsters_indexes,
+                        heroes_ids,
+                        monsters_ids,
                     },
                 );
 
-            world.emit_event(@BattleCreatedEvent { player: starknet::get_caller_address(), id: destiny.total_battles });
+            world
+                .emit_event(
+                    @BattleCreatedEvent {
+                        player: starknet::get_caller_address(), id: destiny.total_battles,
+                    },
+                );
         }
 
         fn play(ref self: ContractState, actions: Span<(u32, u32, u32)>) {
@@ -64,83 +69,125 @@ pub mod actions {
             let current_battle: CurrentBattle = world.read_model(get_caller_address());
             let battle_id = current_battle.battle_id;
             let battle: Battle = world.read_model(current_battle.battle_id);
+            let mut is_finished = false;
 
             for action in actions {
                 let (hero_index, monster_index, action_id) = *action;
                 self
                     .do_action(
-                        ref world, ref random, battle_id, hero_index, monster_index, action_id,
+                        ref world,
+                        ref random,
+                        battle_id,
+                        hero_index,
+                        monster_index,
+                        action_id,
+                        is_monster_attack: false,
                     );
             }
 
-            let mut monsters_alive_indexes = array![];
-            for monster_index in battle.monsters_indexes {
-                let monster_status: CharacterStatus = world.read_model((battle_id, *monster_index));
+            let mut monsters_alive_ids = array![];
+            for monster_id in battle.monsters_ids {
+                let monster_status: CharacterStatus = world.read_model((battle_id, *monster_id));
                 if monster_status.health > 0 {
-                    monsters_alive_indexes.append(*monster_index);
+                    monsters_alive_ids.append(*monster_id);
                 }
             }
 
-            if monsters_alive_indexes.is_empty() {
+            if monsters_alive_ids.is_empty() {
                 world.emit_event(@PlayerWinEvent { battle_id, player: battle.player });
                 world.write_model(@CurrentBattle { player: battle.player, battle_id: 0 });
-                return;
+                is_finished = true;
             }
 
-            let mut enemy_actions: Array<(u32, u32, u32)> = array![];
-            for monster_index in monsters_alive_indexes {
-                let monster: Character = world.read_model(monster_index);
-                let skill_id = random
-                    .between(0, (monster.skills.len() - 1).try_into().unwrap())
-                    .try_into()
-                    .unwrap();
-                if is_attack_action(skill_id) {
-                    let target_index = random
-                        .between(0, (battle.heroes_indexes.len() - 1).try_into().unwrap())
+            if !is_finished {
+                let mut enemy_actions: Array<(u32, u32, u32)> = array![];
+                let mut monster_index = 0;
+                for monster_id in monsters_alive_ids.clone() {
+                    let monster: Character = world.read_model(monster_id);
+                    let skill_id = random
+                        .between(0, (monster.skills.len() - 1).try_into().unwrap())
                         .try_into()
                         .unwrap();
-                    enemy_actions.append((monster_index, target_index, skill_id));
-                } else if is_heal_action(skill_id) {
-                    let target_index = random
-                        .between(0, (battle.monsters_indexes.len() - 1).try_into().unwrap())
-                        .try_into()
-                        .unwrap();
-                    enemy_actions.append((monster_index, target_index, skill_id));
-                } else if is_buff_action(skill_id) {
-                    let target_index = random
-                        .between(0, (battle.monsters_indexes.len() - 1).try_into().unwrap())
-                        .try_into()
-                        .unwrap();
-                    enemy_actions.append((monster_index, target_index, skill_id));
-                } else if is_debuff_action(skill_id) {
-                    let target_index = random
-                        .between(0, (battle.heroes_indexes.len() - 1).try_into().unwrap())
-                        .try_into()
-                        .unwrap();
-                    enemy_actions.append((monster_index, target_index, skill_id));
-                } else {}
-            }
 
-            for action in enemy_actions {
-                let (monster_index, hero_index, action_id) = action;
-                self
-                    .do_action(
-                        ref world, ref random, battle_id, monster_index, hero_index, action_id,
-                    );
-            }
-
-            let mut heroes_alive_indexes = array![];
-            for hero_index in battle.heroes_indexes {
-                let hero_status: CharacterStatus = world.read_model((battle_id, *hero_index));
-                if hero_status.health > 0 {
-                    heroes_alive_indexes.append(hero_index);
+                    if is_attack_action(skill_id) {
+                        let target_index = random
+                            .between(0, (battle.heroes_ids.len() - 1).try_into().unwrap())
+                            .try_into()
+                            .unwrap();
+                        enemy_actions.append((monster_index, target_index, skill_id));
+                    } else if is_heal_action(skill_id) {
+                        let target_index = random
+                            .between(0, (battle.monsters_ids.len() - 1).try_into().unwrap())
+                            .try_into()
+                            .unwrap();
+                        enemy_actions.append((monster_index, target_index, skill_id));
+                    } else if is_buff_action(skill_id) {
+                        let target_index = random
+                            .between(0, (battle.monsters_ids.len() - 1).try_into().unwrap())
+                            .try_into()
+                            .unwrap();
+                        enemy_actions.append((monster_index, target_index, skill_id));
+                    } else if is_debuff_action(skill_id) {
+                        let target_index = random
+                            .between(0, (battle.heroes_ids.len() - 1).try_into().unwrap())
+                            .try_into()
+                            .unwrap();
+                        enemy_actions.append((monster_index, target_index, skill_id));
+                    } else {}
+                    monster_index += 1;
                 }
-            }
 
-            if heroes_alive_indexes.is_empty() {
-                world.emit_event(@PlayerLoseEvent { battle_id, player: battle.player });
-                world.write_model(@CurrentBattle { player: battle.player, battle_id: 0 });
-                return;
+                for action in enemy_actions {
+                    let (monster_index, hero_index, action_id) = action;
+                    self
+                        .do_action(
+                            ref world,
+                            ref random,
+                            battle_id,
+                            monster_index,
+                            hero_index,
+                            action_id,
+                            true,
+                        );
+                }
+
+                let mut heroes_alive_ids = array![];
+                for hero_id in battle.heroes_ids {
+                    let hero_status: CharacterStatus = world.read_model((battle_id, *hero_id));
+                    if hero_status.health > 0 {
+                        heroes_alive_ids.append(*hero_id);
+                    }
+                }
+
+                if heroes_alive_ids.is_empty() {
+                    world.emit_event(@PlayerLoseEvent { battle_id, player: battle.player });
+                    world.write_model(@CurrentBattle { player: battle.player, battle_id: 0 });
+                    is_finished = true;
+                }
+
+                world
+                    .write_model(
+                        @Battle {
+                            id: battle_id,
+                            level: battle.level,
+                            player: battle.player,
+                            heroes_ids: heroes_alive_ids.span(),
+                            monsters_ids: monsters_alive_ids.span(),
+                            is_finished,
+                        },
+                    );
+            } else {
+                world
+                    .write_model(
+                        @Battle {
+                            id: battle_id,
+                            level: battle.level,
+                            player: battle.player,
+                            heroes_ids: battle.heroes_ids,
+                            monsters_ids: monsters_alive_ids.span(),
+                            is_finished,
+                        },
+                    );
             }
         }
 
@@ -288,7 +335,7 @@ pub mod actions {
     #[generate_trait]
     impl InternalImpl of InternalTrait {
         fn world_default(self: @ContractState) -> WorldStorage {
-            self.world(@"destiny")
+            self.world(@"destiny2")
         }
 
         fn do_action(
@@ -299,9 +346,20 @@ pub mod actions {
             from_idx: u32,
             to_idx: u32,
             action_id: u32,
+            is_monster_attack: bool,
         ) {
-            let mut from_status: CharacterStatus = world.read_model((battle_id, from_idx));
-            let mut to_status: CharacterStatus = world.read_model((battle_id, to_idx));
+            let battle: Battle = world.read_model(battle_id);
+            let mut from_status: CharacterStatus = if is_monster_attack {
+                world.read_model((battle_id, *battle.monsters_ids[from_idx]))
+            } else {
+                world.read_model((battle_id, *battle.heroes_ids[from_idx]))
+            };
+
+            let mut to_status: CharacterStatus = if is_monster_attack {
+                world.read_model((battle_id, *battle.heroes_ids[to_idx]))
+            } else {
+                world.read_model((battle_id, *battle.monsters_ids[to_idx]))
+            };
 
             if is_attack_action(action_id) {
                 let miss = random.between(0, 100) < (to_status.evasion).try_into().unwrap();
@@ -422,23 +480,22 @@ pub mod actions {
 
         fn set_battle_heroes(ref self: ContractState, battle_id: u32, level: u32) -> Span<u32> {
             let mut world = self.world_default();
-            let heroes_indexes = if level == 1 {
-                [0, 1].span()
+            let heroes_ids = if level == 1 {
+                [1, 2].span()
             } else if level == 2 {
-                [0, 1, 2].span()
+                [1, 2, 3].span()
             } else if level == 3 {
-                [0, 1, 2].span()
+                [1, 2, 3].span()
             } else {
                 [].span()
             };
 
-            for hero_index in heroes_indexes {
-                let hero: Character = world.read_model(*hero_index);
+            for hero_id in heroes_ids {
+                let hero: Character = world.read_model(*hero_id);
                 world
                     .write_model(
                         @CharacterStatus {
                             battle_id: battle_id,
-                            character_index: *hero_index,
                             character_id: hero.id,
                             health: hero.health,
                             attack: hero.attack,
@@ -448,28 +505,27 @@ pub mod actions {
                         },
                     );
             }
-            heroes_indexes
+            heroes_ids
         }
 
         fn set_battle_monsters(ref self: ContractState, battle_id: u32, level: u32) -> Span<u32> {
             let mut world = self.world_default();
-            let monsters_indexes = if level == 1 {
-                [0, 1].span()
+            let monsters_ids = if level == 1 {
+                [4, 5].span()
             } else if level == 2 {
-                [0, 1, 2].span()
+                [4, 5, 6].span()
             } else if level == 3 {
-                [0, 1, 2].span()
+                [5, 7, 6].span()
             } else {
                 [].span()
             };
 
-            for monster_index in monsters_indexes {
-                let monster: Character = world.read_model(*monster_index + 10);
+            for monster_id in monsters_ids {
+                let monster: Character = world.read_model(*monster_id);
                 world
                     .write_model(
                         @CharacterStatus {
                             battle_id: battle_id,
-                            character_index: *monster_index,
                             character_id: monster.id,
                             health: monster.health,
                             attack: monster.attack,
@@ -479,7 +535,7 @@ pub mod actions {
                         },
                     );
             }
-            monsters_indexes
+            monsters_ids
         }
     }
 

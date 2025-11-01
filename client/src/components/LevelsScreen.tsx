@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAccount, useDisconnect } from '@starknet-react/core'
+import { useGameActions } from '../hooks/useGameActions'
 
 type LevelId = 1 | 2 | 3
 
@@ -19,6 +20,7 @@ export default function LevelsScreen() {
   const { disconnect } = useDisconnect()
   const wasConnectedRef = useRef(false)
   const hasRedirectedRef = useRef(false)
+  const { startBattle } = useGameActions();
 
   useEffect(() => {
     localStorage.setItem('destiny_unlocked_level', String(unlocked))
@@ -52,12 +54,12 @@ export default function LevelsScreen() {
       hasRedirectedRef.current = true
       navigate('/')
     }
+
   }, [account, navigate])
 
-  const handleSelect = (level: LevelId) => {
-    if (level > unlocked) return
-    navigate(`/scene/${level}`)
-    if (level < 3 && unlocked === level) setUnlocked((level + 1) as LevelId)
+  const handleSelect = async (level: LevelId) => {
+    let result = await startBattle(level);
+    navigate(`/battle/${BigInt(result?.battle_id as string)}`)
   }
 
   const handleLogout = async () => {

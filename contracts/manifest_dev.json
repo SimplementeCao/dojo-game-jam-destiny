@@ -1,9 +1,9 @@
 {
   "world": {
     "class_hash": "0x691da17eb9ef169b385eaaf3a303972d187479e30be146d3337423eaec6272d",
-    "address": "0x5a83b1c3d8f185d0528fd2165d4e335684560ebbdca3d039dd9cdc251ee9b37",
-    "seed": "destiny",
-    "name": "destiny",
+    "address": "0x43ee1026a1d9bc19847b2a104ee8a48ad81d3e680f1643ba7c751550445674",
+    "seed": "destiny2",
+    "name": "destiny2",
     "entrypoints": [
       "uuid",
       "set_metadata",
@@ -1490,8 +1490,8 @@
   },
   "contracts": [
     {
-      "address": "0x664700fce9ba26001ba577917ca98f5ab71b1c520911d2ac4f4f3b906c47ff7",
-      "class_hash": "0x3cc54550c5885ad3cf95ef83230cc28240363739c5c34f30ead72a84a60a760",
+      "address": "0x3cfcdd7e6a922d3aea5e555aeb4e0006104cd20bbe4a67e9fe0c5bebe054fc1",
+      "class_hash": "0x2725cfb312234f72776f75cfb8ca350c6dac14b5e4180354b799d5bddf2542a",
       "abi": [
         {
           "type": "impl",
@@ -1546,7 +1546,7 @@
         {
           "type": "impl",
           "name": "ActionsImpl",
-          "interface_name": "destiny::systems::actions::IActions"
+          "interface_name": "destiny2::systems::actions::IActions"
         },
         {
           "type": "struct",
@@ -1574,7 +1574,7 @@
         },
         {
           "type": "struct",
-          "name": "destiny::models::Battle",
+          "name": "destiny2::models::Battle",
           "members": [
             {
               "name": "id",
@@ -1589,11 +1589,11 @@
               "type": "core::starknet::contract_address::ContractAddress"
             },
             {
-              "name": "heroes_indexes",
+              "name": "heroes_ids",
               "type": "core::array::Span::<core::integer::u32>"
             },
             {
-              "name": "monsters_indexes",
+              "name": "monsters_ids",
               "type": "core::array::Span::<core::integer::u32>"
             },
             {
@@ -1614,7 +1614,7 @@
         },
         {
           "type": "interface",
-          "name": "destiny::systems::actions::IActions",
+          "name": "destiny2::systems::actions::IActions",
           "items": [
             {
               "type": "function",
@@ -1627,7 +1627,7 @@
               ],
               "outputs": [
                 {
-                  "type": "destiny::models::Battle"
+                  "type": "destiny2::models::Battle"
                 }
               ],
               "state_mutability": "view"
@@ -1796,7 +1796,7 @@
         },
         {
           "type": "event",
-          "name": "destiny::systems::actions::actions::Event",
+          "name": "destiny2::systems::actions::actions::Event",
           "kind": "enum",
           "variants": [
             {
@@ -1813,8 +1813,8 @@
         }
       ],
       "init_calldata": [],
-      "tag": "destiny-actions",
-      "selector": "0x13dc811311c867aeedb5ded7106674afda2f43693fb3c1e23793db5934bdb6e",
+      "tag": "destiny2-actions",
+      "selector": "0x1ca1867fd20b5ce6e4e957336f692b83ba3f88114443b15e5a26abc7ff56a23",
       "systems": [
         "start_battle",
         "play",
@@ -1827,95 +1827,95 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0x4ab080f3bc56265f195ac3368ded6513c98a7aa7600543f967429126e5bee53",
-      "tag": "destiny-Battle",
-      "selector": "0x413e9a4765604d2e7b812655a03a0f1320a251b908f61e571d121a1ca78c5a2"
+      "class_hash": "0x50cb9cfdad35e4acf109118cbd010f593c79672b1c432fb1eb23a43c68ebe52",
+      "tag": "destiny2-Battle",
+      "selector": "0x5d9e06258c3ba9b41c4f51b5ca9717c2f36e24ed19770c166a18cf567f194fe"
     },
     {
       "members": [],
-      "class_hash": "0x65a673c4b4812f2cb8d843580d628c150914423e5ae582f039d5de43cf08160",
-      "tag": "destiny-Character",
-      "selector": "0x38d2b4713a22412849e1ccf95262a5d74cf20ca7b9a80ecac31084bc5475f8d"
+      "class_hash": "0x7526eb1256ffbcc8c32db3e22b2c9fcf2dce97c83a8ab268865f25f38807031",
+      "tag": "destiny2-Character",
+      "selector": "0x18cf3feb0791062a293cf7cd8ace2270078bd122f77441ca930b9427b8c05b1"
     },
     {
       "members": [],
-      "class_hash": "0x5690e0db43f22f7299c93c60911504753357c145f4593feb5be4fbdc9f8646c",
-      "tag": "destiny-CharacterStatus",
-      "selector": "0x6069a3f791ec81caf47b3fa9f4f3780f2d787389b1eb5ebf3d38c52097f0008"
+      "class_hash": "0x118df68e5c08dfa32e2d52b542884e75c5fb3a82fef232b9f60c445bf1e4f4a",
+      "tag": "destiny2-CharacterStatus",
+      "selector": "0x5d73131d73bec1e72c9fd5deed0965f208017b26232c704b1cf290dfe3f9877"
     },
     {
       "members": [],
-      "class_hash": "0x4820b1d50076689260d692b7bd5491b7f160afa4d60ab45916126a390b82c85",
-      "tag": "destiny-CurrentBattle",
-      "selector": "0x51d63800ba801bedaf522b60f1f71814d965de6c805dbcffcbc35ad0cac2536"
+      "class_hash": "0x581aef212bf88829ac8f7ae8021aedd6598aacb635e350699c83ff8e449f847",
+      "tag": "destiny2-CurrentBattle",
+      "selector": "0x362940535f39ef6b6ea7ef4b5860cde2cd4958e3e3639fd8c816610eec5a666"
     },
     {
       "members": [],
-      "class_hash": "0x303dc6adda28705c1f2e1d9a23082d9d41bf7c93ad31e8562ca833867218980",
-      "tag": "destiny-Destiny",
-      "selector": "0x10d31848cd1c8dd22d83636850a9fe8ae70d7458177c21866bf7f567c4ada8f"
+      "class_hash": "0x39dc74e5c3a7ca810cde63d222bf6ac4f667316bb9dfe610d444c4d042f1870",
+      "tag": "destiny2-Destiny",
+      "selector": "0x2f29da7c85a3e4c7c6b383b45bc0211c038cd4818e1332d67a0bba9d97fdcf7"
     },
     {
       "members": [],
-      "class_hash": "0x69c91a02ad39b109a3f1cf5810cf1e4ca98bd75e61dcac727edda40db7ea077",
-      "tag": "destiny-Nonce",
-      "selector": "0x4ff306275510f587860eda0bcafe883c19f1141fe93e3ec906ab485d7cfe6ec"
+      "class_hash": "0x52dd8602717bd454b2e333d91690d6a5a791965b0dc1325bca6b3e0054b11ba",
+      "tag": "destiny2-Nonce",
+      "selector": "0x66a4bd257f556b489b78b84c52e8c24d9b3ef0353efd48f8ee1f2302d377eb5"
     },
     {
       "members": [],
-      "class_hash": "0x405334769f0dcf17185921942362154f903447d90e98a18009c9355926ab6ed",
-      "tag": "destiny-Progress",
-      "selector": "0x2cc846eb83e3ea1343ffb88d0c150ab89bf649affcfb46253099c9e7db8cb9f"
+      "class_hash": "0x423372445e2099e55ba688c0a4bb2e192629c9380ea704409c0051fbdd68aa8",
+      "tag": "destiny2-Progress",
+      "selector": "0x6ed1255aac147cb44c649cb56b5bb1d9f49b36de539c68182544f5ce07ce0bc"
     }
   ],
   "events": [
     {
       "members": [],
-      "class_hash": "0x42731ba50b8f7d2e953f5f3f98f72c4d6d83eff974e5d2eade1c33ecf04a28e",
-      "tag": "destiny-BattleCreatedEvent",
-      "selector": "0x4099229ac4d9482e5e6980f612d26f0e5ac66797183ae646004ccc2be71f14"
+      "class_hash": "0x625ae3eb47f5b277cde730110013add9bc00b0c8a2a0ef10e14fe76f27cb40d",
+      "tag": "destiny2-BattleCreatedEvent",
+      "selector": "0x38c7286eaa550e1dc3a407c9700a9a9f4e87887d64ef44b8af9c3139fa8a7e6"
     },
     {
       "members": [],
-      "class_hash": "0x6d10ee617b88995307e57f85dfda9e0f4b282ddbd350088023f833f3f4c0723",
-      "tag": "destiny-BuffEvent",
-      "selector": "0x5fee3b96e931f1005143146a6f32495af6bfbf0ed553e15494d123fefd6c1f8"
+      "class_hash": "0x6f4de572141d9afde4692c9792f274291310b34aa3285b38dfacd54e534e5a0",
+      "tag": "destiny2-BuffEvent",
+      "selector": "0x71e2bbb6bc8e68f12f86c30f7a2b00296d3677acdf5a06ee11627a5321715a5"
     },
     {
       "members": [],
-      "class_hash": "0xb113313de5a003cfb845382aa7a3c485b9e7ce55dcef136adcb723e953c43b",
-      "tag": "destiny-DamageEvent",
-      "selector": "0x5365ddfb13659317fa91d816706cd2642752c8dd62896cc3e0b36b81b030d7c"
+      "class_hash": "0x35d57cffb176e3be19502f3c7af6d96fd1a400a7c01cda2085dc23e1cf99ebb",
+      "tag": "destiny2-DamageEvent",
+      "selector": "0x1cce3923e020709bfa8af5398cc087c289f1c41bdfb6f2fda3c3c37d264ade6"
     },
     {
       "members": [],
-      "class_hash": "0x436c72e3bc6114fa016914a966fbbf39742ab3d42596385421c5fcd50553355",
-      "tag": "destiny-DebuffEvent",
-      "selector": "0x284d6af9109a212fbc382de2ee8b21bffd46721c99daf22cdc190ef0a0b1222"
+      "class_hash": "0xdd4029527d3aa02acad4295976a5aeb08cbac2e6901e0d961f0f6446f62c86",
+      "tag": "destiny2-DebuffEvent",
+      "selector": "0x24e1849a33722946f8af7e5329b3b33bf2ff54863531d666276932e805a5a3e"
     },
     {
       "members": [],
-      "class_hash": "0x6bb318e2aafce65890819a7a78b9decd708de9e41da546d828d9455185a5013",
-      "tag": "destiny-HealEvent",
-      "selector": "0x5dcaf273e2fdbf3392219a10954571659d8db44f4e921fde4e92d715b7d1f39"
+      "class_hash": "0x17f6cf3772f7b958c09fb7ff8a4638d5711699adbbd128090f69ed1d83c6ef5",
+      "tag": "destiny2-HealEvent",
+      "selector": "0x6b3a5c260631a50cb35be832b4ffc7c4d3291e15031015df3d9c9c70b275b4a"
     },
     {
       "members": [],
-      "class_hash": "0x2b574a1d8443dcc4496b6ccd195e4b6339624b88e7e2b22860231522b64f158",
-      "tag": "destiny-MissEvent",
-      "selector": "0x7f8d9c75027a5ba77234617647ec7ceb25cb07d6390bdd8d7b4c7524779450e"
+      "class_hash": "0x56770c5f6829cc925e20d68d0887c4bd3e0ce48bfa747587059967bd25c54c5",
+      "tag": "destiny2-MissEvent",
+      "selector": "0x5b44d0645fed8d1c3fae4806178c7c89779c249ee009e967b767ea719f7ed5a"
     },
     {
       "members": [],
-      "class_hash": "0x6d7a4c8f71f1f94c144861bdf32b85c0773bcdb9ce73e03d27fcbb73f7556a1",
-      "tag": "destiny-PlayerLoseEvent",
-      "selector": "0x48e3c8642dd0cae9886398a1b48575ea8c8bc55c96e012aadb713f1ad489888"
+      "class_hash": "0x1331dc2ac2c1959adf008d5167ccae6d43a7b20d4f0e10d59d1b8c1a713b24e",
+      "tag": "destiny2-PlayerLoseEvent",
+      "selector": "0xba0a8b02c14c08f2006cc16c6d00da08b003cef0dc41293bf543e38ff26fa"
     },
     {
       "members": [],
-      "class_hash": "0x1949b69814b4da2f0cf7b52d5a4c66b00863a8f65647cf2ee6096e8e2da5e5d",
-      "tag": "destiny-PlayerWinEvent",
-      "selector": "0x4bcda21d2114b1390ce2d3ce08f0afa0d521f8ce7790f0f7acaab8ffea2e009"
+      "class_hash": "0x1b9676440f41e4a04d3e71cc92a3ffd4c00181dad9a1901cb619e5235a61215",
+      "tag": "destiny2-PlayerWinEvent",
+      "selector": "0x2e1cfb75078ccb59f8e7f3a158352317da24bd3b4a786b56b4f9277e0b758e3"
     }
   ],
   "external_contracts": []

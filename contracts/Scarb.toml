@@ -1,6 +1,6 @@
 [package]
 cairo-version = "=2.12.2"
-name = "destiny"
+name = "destiny2"
 version = "1.0.0"
 edition = "2024_07"
 
@@ -24,7 +24,7 @@ cairo_test = "=2.12.2"
 dojo_cairo_test = "1.7.0"
 
 [profile.slot]
+account_address = "0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819"
+private_key = "0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4"
 
-account_address = "YOUR_NEW_ACCOUNT_ADDRESS"
-
-private_key = "YOUR_NEW_PRIVATE_KEY"
+#slot deployments create destiny2 torii --world 0x0043ee1026a1d9bc19847b2a104ee8a48ad81d3e680f1643ba7c751550445674 --rpc https://api.cartridge.gg/x/destiny2/katana

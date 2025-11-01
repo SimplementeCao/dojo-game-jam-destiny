@@ -42,24 +42,24 @@ const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
     try {
       // Crear elementos de audio si no existen
-      if (!backgroundMusicRef.current) {
-        backgroundMusicRef.current = new Audio('/music/fondo.mp3');
-        backgroundMusicRef.current.loop = true;
-        backgroundMusicRef.current.volume = 0.3;
-      }
+      // if (!backgroundMusicRef.current) {
+      //   backgroundMusicRef.current = new Audio('/music/fondo.mp3');
+      //   backgroundMusicRef.current.loop = true;
+      //   backgroundMusicRef.current.volume = 0.3;
+      // }
 
-      if (!effectSoundRef.current) {
-        effectSoundRef.current = new Audio('/music/efecto.mp3');
-        effectSoundRef.current.volume = 0.7;
-      }
+      // if (!effectSoundRef.current) {
+      //   effectSoundRef.current = new Audio('/music/efecto.mp3');
+      //   effectSoundRef.current.volume = 0.7;
+      // }
 
-      // Intentar reproducir la música si está habilitada
-      if (isMusicEnabled && backgroundMusicRef.current) {
-        await backgroundMusicRef.current.play();
-        console.log('🎵 Música de fondo iniciada correctamente');
-      }
+      // // Intentar reproducir la música si está habilitada
+      // if (isMusicEnabled && backgroundMusicRef.current) {
+      //   await backgroundMusicRef.current.play();
+      //   console.log('🎵 Música de fondo iniciada correctamente');
+      // }
 
-      setIsAudioInitialized(true);
+      // setIsAudioInitialized(true);
     } catch (error) {
       console.log('⚠️ Error al inicializar audio:', error);
     }
@@ -288,7 +288,7 @@ function App() {
         {/* Rutas */}
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/scene/:level" element={<BattleScreen />} />
+          <Route path="/battle/:battleId" element={<BattleScreen />} />
           <Route path="/levels" element={<LevelsScreen />} />
           <Route path="/contracts" element={<ContractsScreen />} />
         </Routes>

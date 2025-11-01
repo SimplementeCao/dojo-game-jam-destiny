@@ -8,7 +8,7 @@ import { dojoConfig } from './dojo/dojoConfig'
 import { init } from '@dojoengine/sdk'
 import { DojoSdkProvider } from '@dojoengine/sdk/react'
 import { setupWorld } from './dojo/generated/typescript/contracts.gen'
-import { SchemaType } from './dojo/models.gen.ts'
+import type { SchemaType } from './dojo/generated/typescript/models.gen'
 import StarknetProvider from './store/starknetProvider.tsx'
 
 async function main() {
@@ -18,7 +18,7 @@ async function main() {
       worldAddress: dojoConfig.manifest.world.address,
     },
     domain: {
-      name: 'GAME_JAM_DESTINY',
+      name: 'WP_DESTINY2',
       version: '1.0',
       chainId: 'KATANA',
       revision: '1',

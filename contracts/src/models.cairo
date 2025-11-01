@@ -43,7 +43,6 @@ pub struct CharacterStatus {
     #[key]
     pub battle_id: u32,
     #[key]
-    pub character_index: u32,
     pub character_id: u32,
     pub health: u32,
     pub attack: u32,
@@ -67,8 +66,8 @@ pub struct Battle {
     pub id: u32,
     pub level: u32,
     pub player: ContractAddress,
-    pub heroes_indexes: Span<u32>,
-    pub monsters_indexes: Span<u32>,
+    pub heroes_ids: Span<u32>,
+    pub monsters_ids: Span<u32>,
     pub is_finished: bool,
 }
 

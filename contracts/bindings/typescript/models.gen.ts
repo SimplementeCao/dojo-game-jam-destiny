@@ -7,8 +7,8 @@ export interface Battle {
 	id: BigNumberish;
 	level: BigNumberish;
 	player: string;
-	heroes_indexes: Array<BigNumberish>;
-	monsters_indexes: Array<BigNumberish>;
+	heroes_ids: Array<BigNumberish>;
+	monsters_ids: Array<BigNumberish>;
 	is_finished: boolean;
 }
 
@@ -27,7 +27,6 @@ export interface Character {
 // Type definition for `destiny::models::CharacterStatus` struct
 export interface CharacterStatus {
 	battle_id: BigNumberish;
-	character_index: BigNumberish;
 	character_id: BigNumberish;
 	health: BigNumberish;
 	attack: BigNumberish;
@@ -146,8 +145,8 @@ export const schema: SchemaType = {
 			id: 0,
 			level: 0,
 			player: "",
-			heroes_indexes: [0],
-			monsters_indexes: [0],
+			heroes_ids: [0],
+			monsters_ids: [0],
 			is_finished: false,
 		},
 		Character: {
@@ -162,7 +161,6 @@ export const schema: SchemaType = {
 		},
 		CharacterStatus: {
 			battle_id: 0,
-			character_index: 0,
 			character_id: 0,
 			health: 0,
 			attack: 0,
