@@ -1,14 +1,16 @@
-#[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug)]
+use starknet::ContractAddress;
+
+#[derive(Serde, Copy, Drop, PartialEq, Debug)]
 pub enum EnumExample {
     Example,
 }
 
 #[derive(Copy, Drop, Serde)]
 #[dojo::model]
-pub struct Example {
+pub struct Destiny {
     #[key]
-    pub id: u32,
-    pub value: u32,
+    pub key: u32,
+    pub total_battles: u32,
 }
 
 #[derive(Copy, Drop, Serde)]
@@ -27,6 +29,7 @@ pub struct Character {
     #[key]
     pub id: u32,
     pub name: ByteArray,
+    pub skills: Span<u32>,
     pub health: u32,
     pub attack: u32,
     pub defense: u32,
@@ -38,12 +41,104 @@ pub struct Character {
 #[dojo::model]
 pub struct CharacterStatus {
     #[key]
-    battle_id: u32,
+    pub battle_id: u32,
     #[key]
-    character_id: u32,
+    pub character_index: u32,
+    pub character_id: u32,
     pub health: u32,
     pub attack: u32,
     pub defense: u32,
     pub critical_chance: u32,
     pub evasion: u32,
 }
+
+#[derive(Copy, Drop, Serde)]
+#[dojo::model]
+pub struct CurrentBattle {
+    #[key]
+    pub player: ContractAddress,
+    pub battle_id: u32,
+}
+
+#[derive(Copy, Drop, Serde)]
+#[dojo::model]
+pub struct Battle {
+    #[key]
+    pub id: u32,
+    pub level: u32,
+    pub player: ContractAddress,
+    pub heroes_indexes: Span<u32>,
+    pub monsters_indexes: Span<u32>,
+    pub is_finished: bool,
+}
+
+#[derive(Copy, Drop, Serde)]
+#[dojo::event]
+pub struct DamageEvent {
+    #[key]
+    pub battle_id: u32,
+    pub from_idx: u32,
+    pub to_idx: u32,
+    pub critical_hit: bool,
+    pub damage: u32,
+}
+
+#[derive(Copy, Drop, Serde)]
+#[dojo::event]
+pub struct MissEvent {
+    #[key]
+    pub battle_id: u32,
+    pub from_idx: u32,
+    pub to_idx: u32,
+}
+
+
+#[derive(Copy, Drop, Serde)]
+#[dojo::event]
+pub struct HealEvent {
+    #[key]
+    pub battle_id: u32,
+    pub from_idx: u32,
+    pub to_idx: u32,
+    pub amount: u32,
+}
+
+#[derive(Copy, Drop, Serde)]
+#[dojo::event]
+pub struct BuffEvent {
+    #[key]
+    pub battle_id: u32,
+    pub from_idx: u32,
+    pub to_idx: u32,
+    pub buff_id: u32,
+    pub amount: u32,
+}
+
+
+#[derive(Copy, Drop, Serde)]
+#[dojo::event]
+pub struct DebuffEvent {
+    #[key]
+    pub battle_id: u32,
+    pub from_idx: u32,
+    pub to_idx: u32,
+    pub debuff_id: u32,
+    pub amount: u32,
+}
+
+#[derive(Copy, Drop, Serde)]
+#[dojo::event]
+pub struct PlayerWinEvent {
+    #[key]
+    pub battle_id: u32,
+    pub player: ContractAddress,
+}
+
+#[derive(Copy, Drop, Serde)]
+#[dojo::event]
+pub struct PlayerLoseEvent {
+    #[key]
+    pub battle_id: u32,
+    pub player: ContractAddress,
+}
+

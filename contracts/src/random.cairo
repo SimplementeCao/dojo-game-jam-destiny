@@ -10,13 +10,13 @@ pub struct Nonce {
 }
 
 #[derive(Copy, Drop, Serde)]
-struct Random {
+pub struct Random {
     seed: felt252,
     nonce: usize,
 }
 
 #[generate_trait]
-impl RandomImpl of RandomTrait {
+pub impl RandomImpl of RandomTrait {
     // one instance by contract, then passed by ref to sub fns
     fn new() -> Random {
         Random { seed: seed(get_contract_address()), nonce: 0 }
