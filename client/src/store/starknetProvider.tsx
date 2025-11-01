@@ -14,7 +14,6 @@ const actions_contract = getContractByName(
   "actions"
 );
 
-// Define session policies for sheep-a-sheep game
 const policies: SessionPolicies = {
   contracts: {
     [actions_contract.address]: {
