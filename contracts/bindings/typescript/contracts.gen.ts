@@ -1,44 +1,40 @@
 import { DojoProvider, DojoCall } from "@dojoengine/core";
-import { Account, AccountInterface, BigNumberish, CairoOption, CairoCustomEnum, ByteArray } from "starknet";
+import { Account, AccountInterface, BigNumberish, CairoOption, CairoCustomEnum } from "starknet";
 import * as models from "./models.gen";
 
 export function setupWorld(provider: DojoProvider) {
 
-	const build_actions_selectTile_calldata = (gameId: BigNumberish, position: models.Vec2, layer: BigNumberish): DojoCall => {
+	const build_actions_view_calldata = (): DojoCall => {
 		return {
 			contractName: "actions",
-			entrypoint: "select_tile",
-			calldata: [gameId, position, layer],
+			entrypoint: "view",
+			calldata: [],
 		};
 	};
 
-	const actions_selectTile = async (snAccount: Account | AccountInterface, gameId: BigNumberish, position: models.Vec2, layer: BigNumberish) => {
+	const actions_view = async () => {
 		try {
-			return await provider.execute(
-				snAccount,
-				build_actions_selectTile_calldata(gameId, position, layer),
-				"dojo_sheep_a_sheep",
-			);
+			return await provider.call("destiny", build_actions_view_calldata());
 		} catch (error) {
 			console.error(error);
 			throw error;
 		}
 	};
 
-	const build_actions_startNewGame_calldata = (): DojoCall => {
+	const build_actions_write_calldata = (value: BigNumberish): DojoCall => {
 		return {
 			contractName: "actions",
-			entrypoint: "start_new_game",
-			calldata: [],
+			entrypoint: "write",
+			calldata: [value],
 		};
 	};
 
-	const actions_startNewGame = async (snAccount: Account | AccountInterface) => {
+	const actions_write = async (snAccount: Account | AccountInterface, value: BigNumberish) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_actions_startNewGame_calldata(),
-				"dojo_sheep_a_sheep",
+				build_actions_write_calldata(value),
+				"destiny",
 			);
 		} catch (error) {
 			console.error(error);
@@ -50,10 +46,10 @@ export function setupWorld(provider: DojoProvider) {
 
 	return {
 		actions: {
-			selectTile: actions_selectTile,
-			buildSelectTileCalldata: build_actions_selectTile_calldata,
-			startNewGame: actions_startNewGame,
-			buildStartNewGameCalldata: build_actions_startNewGame_calldata,
+			view: actions_view,
+			buildViewCalldata: build_actions_view_calldata,
+			write: actions_write,
+			buildWriteCalldata: build_actions_write_calldata,
 		},
 	};
 }

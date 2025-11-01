@@ -1,9 +1,9 @@
 {
   "world": {
     "class_hash": "0x691da17eb9ef169b385eaaf3a303972d187479e30be146d3337423eaec6272d",
-    "address": "0x6c53bcaae206ac1f12713de80cb0b4df38323db4bb33afc0a71cbdeb6b933be",
-    "seed": "dojo_sheep_a_sheep",
-    "name": "dojo_sheep_a_sheep",
+    "address": "0x5a83b1c3d8f185d0528fd2165d4e335684560ebbdca3d039dd9cdc251ee9b37",
+    "seed": "destiny",
+    "name": "destiny",
     "entrypoints": [
       "uuid",
       "set_metadata",
@@ -1490,8 +1490,8 @@
   },
   "contracts": [
     {
-      "address": "0x73e3d5c6ecb5f92692615a45d8f5c821f16840be6ec7b64e097c5c0078b11a5",
-      "class_hash": "0x38757d6384b85a44ceaef517b7a4267f32b56beaf1fa963969b52ba5ab383d5",
+      "address": "0x6a7924dc002ed97cfbb826a6c79b360c59cb41af89e3a4fd9e5fbf865d1c469",
+      "class_hash": "0x3195a223612e9e7dfff4404b10214c6373eae3107381696ec2f7306e44758ad",
       "abi": [
         {
           "type": "impl",
@@ -1693,8 +1693,8 @@
         }
       ],
       "init_calldata": [],
-      "tag": "dojo_sheep_a_sheep-actions",
-      "selector": "0x67d4ff71d618b293d570936511685f897e92ec0e65c4b69d85d31fd0a9ed5ef",
+      "tag": "destiny-actions",
+      "selector": "0x13dc811311c867aeedb5ded7106674afda2f43693fb3c1e23793db5934bdb6e",
       "systems": [
         "write",
         "upgrade"
@@ -1705,23 +1705,41 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0x5adc3c46fd2823741b2eaa9ff49e5eb564333ad20260446ea5d7eca65e33d5b",
-      "tag": "dojo_sheep_a_sheep-Example",
-      "selector": "0x31fb846730be79b281fb6117d9f9227d934a93871998f4bdaa600ca007e7ecd"
+      "class_hash": "0x60960b9ad415cbd968f9d61cbb0ac768b19e795240baccb6571a4a298e1157a",
+      "tag": "destiny-Character",
+      "selector": "0x38d2b4713a22412849e1ccf95262a5d74cf20ca7b9a80ecac31084bc5475f8d"
+    },
+    {
+      "members": [],
+      "class_hash": "0x622bcc4c79b143d90d4a88fdc1e2a0e39d3cec0ec2c2593cddd3c9aefc1e3b1",
+      "tag": "destiny-CharacterStatus",
+      "selector": "0x6069a3f791ec81caf47b3fa9f4f3780f2d787389b1eb5ebf3d38c52097f0008"
+    },
+    {
+      "members": [],
+      "class_hash": "0x133b588c11b6ae3790cff3fbf85ee4f280fcaa1759b429f3246e1b792715421",
+      "tag": "destiny-Example",
+      "selector": "0x1ccf24c0b2020366018edf0dbaa2f8ba6e768ecdb9978a16717ca866cd74bdf"
     },
     {
       "members": [],
       "class_hash": "0x69c91a02ad39b109a3f1cf5810cf1e4ca98bd75e61dcac727edda40db7ea077",
-      "tag": "dojo_sheep_a_sheep-Nonce",
-      "selector": "0x4124ff6d13e8c521f83becb04cff901fcd71a883c2d597509cbfd46ca0ce49a"
+      "tag": "destiny-Nonce",
+      "selector": "0x4ff306275510f587860eda0bcafe883c19f1141fe93e3ec906ab485d7cfe6ec"
+    },
+    {
+      "members": [],
+      "class_hash": "0x405334769f0dcf17185921942362154f903447d90e98a18009c9355926ab6ed",
+      "tag": "destiny-Progress",
+      "selector": "0x2cc846eb83e3ea1343ffb88d0c150ab89bf649affcfb46253099c9e7db8cb9f"
     }
   ],
   "events": [
     {
       "members": [],
       "class_hash": "0x7f0cab80398f3826278b009d124fb9d56e7cdd46bdf170487a3ecb8615255e7",
-      "tag": "dojo_sheep_a_sheep-ExampleEvent",
-      "selector": "0x5e53c01bbe45d2b5e4902c2f0467efed436b8da93f00c5116ecdaaed84091c3"
+      "tag": "destiny-ExampleEvent",
+      "selector": "0x2fb86ccc2014b53fa01ec26d0ac78a36cfed2a612057394e8c184ce1f517d28"
     }
   ],
   "external_contracts": []
