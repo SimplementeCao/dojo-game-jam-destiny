@@ -2,6 +2,7 @@ import { useAccount } from "@starknet-react/core";
 import { useDojoSDK } from "@dojoengine/sdk/react";
 import { useState } from "react";
 import type { BigNumberish } from "starknet";
+import { getEventKey } from "../dojo/getEventKey";
 
 export const useGameActions = () => {
   const { account } = useAccount();
@@ -31,11 +32,12 @@ export const useGameActions = () => {
 
       if (tx.isSuccess()) {
         const events = tx.events;
-        console.log("[startBattle] - Events: ", events);
-        const id = 1;
+        const battleCreatedEvent = events.find((event) => event.keys[1] === getEventKey("BattleCreatedEvent"));
+        console.log("[startBattle] - battleCreatedEvent: ", battleCreatedEvent, "battle_id: ", battleCreatedEvent?.data[3]);
+
         return {
           transaction_hash,
-          battle_id: id,
+          battle_id: battleCreatedEvent?.data[3] as BigNumberish,
         };
       } else {
         console.error("Creating new battle:", tx);
