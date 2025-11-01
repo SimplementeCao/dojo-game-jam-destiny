@@ -567,3 +567,64 @@
 	image-rendering: pixelated;
 	background: rgba(0,0,0,0.28);
 }
+
+/* === Battle Screen Skills Buttons === */
+.skills-buttons-container {
+	position:fixed;
+	right: 20px;
+	top:80%;
+	transform: translateY(-50%);
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	z-index: 100;
+}
+
+.skills-buttons {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 12px 20px;
+	background-color: #2C3E50;
+	color: white;
+	font-family: sans-serif;
+	font-size: 1.1rem;
+	border: 2px solid transparent;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: all 0.2s ease-in-out;
+	text-align: left;
+	width: 250px;
+	box-shadow: none;
+	margin: 0;
+}
+
+.skills-buttons .skill-icon {
+	width: 24px;
+	height: 24px;
+	font-size: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	box-shadow: none;
+	background: transparent;
+	border-radius: 0;
+	image-rendering: auto;
+}
+
+.skills-buttons .skill-text {
+	flex-grow: 1;
+}
+
+.skills-buttons.highlighted,
+.skills-buttons:hover {
+	border-color: white;
+	box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+	background-color: #34495E;
+}
+
+.skills-buttons.highlighted .skill-icon,
+.skills-buttons:hover .skill-icon {
+	filter: none;
+}
