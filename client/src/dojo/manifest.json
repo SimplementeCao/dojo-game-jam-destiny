@@ -1,9 +1,9 @@
 {
   "world": {
-    "class_hash": "0x4c60dc46a8ca8bb47675b7b914053cef769afbf0e340523187336b72bd71d1f",
-    "address": "0x501c34d15d26638746a8559291eea08834053cd247a5a86b7238730fd5263b8",
-    "seed": "dojo_sheep_a_sheep",
-    "name": "dojo_sheep_a_sheep",
+    "class_hash": "0x691da17eb9ef169b385eaaf3a303972d187479e30be146d3337423eaec6272d",
+    "address": "0x5a83b1c3d8f185d0528fd2165d4e335684560ebbdca3d039dd9cdc251ee9b37",
+    "seed": "destiny",
+    "name": "destiny",
     "entrypoints": [
       "uuid",
       "set_metadata",
@@ -11,11 +11,13 @@
       "register_event",
       "register_model",
       "register_contract",
+      "register_external_contract",
       "register_library",
       "init_contract",
       "upgrade_event",
       "upgrade_model",
       "upgrade_contract",
+      "upgrade_external_contract",
       "emit_event",
       "emit_events",
       "set_entity",
@@ -83,6 +85,10 @@
           {
             "name": "Library",
             "type": "(core::starknet::class_hash::ClassHash, core::felt252)"
+          },
+          {
+            "name": "ExternalContract",
+            "type": "(core::starknet::contract_address::ContractAddress, core::felt252)"
           }
         ]
       },
@@ -213,6 +219,10 @@
           {
             "name": "Enum",
             "type": "core::array::Span::<dojo::meta::layout::FieldLayout>"
+          },
+          {
+            "name": "FixedArray",
+            "type": "(core::array::Span::<dojo::meta::layout::Layout>, core::integer::u32)"
           }
         ]
       },
@@ -256,6 +266,17 @@
             "outputs": [
               {
                 "type": "dojo::world::resource::Resource"
+              }
+            ],
+            "state_mutability": "view"
+          },
+          {
+            "type": "function",
+            "name": "world_version",
+            "inputs": [],
+            "outputs": [
+              {
+                "type": "core::felt252"
               }
             ],
             "state_mutability": "view"
@@ -369,6 +390,34 @@
           },
           {
             "type": "function",
+            "name": "register_external_contract",
+            "inputs": [
+              {
+                "name": "namespace",
+                "type": "core::byte_array::ByteArray"
+              },
+              {
+                "name": "contract_name",
+                "type": "core::byte_array::ByteArray"
+              },
+              {
+                "name": "instance_name",
+                "type": "core::byte_array::ByteArray"
+              },
+              {
+                "name": "contract_address",
+                "type": "core::starknet::contract_address::ContractAddress"
+              },
+              {
+                "name": "block_number",
+                "type": "core::integer::u64"
+              }
+            ],
+            "outputs": [],
+            "state_mutability": "external"
+          },
+          {
+            "type": "function",
             "name": "register_library",
             "inputs": [
               {
@@ -461,6 +510,30 @@
                 "type": "core::starknet::class_hash::ClassHash"
               }
             ],
+            "state_mutability": "external"
+          },
+          {
+            "type": "function",
+            "name": "upgrade_external_contract",
+            "inputs": [
+              {
+                "name": "namespace",
+                "type": "core::byte_array::ByteArray"
+              },
+              {
+                "name": "instance_name",
+                "type": "core::byte_array::ByteArray"
+              },
+              {
+                "name": "contract_address",
+                "type": "core::starknet::contract_address::ContractAddress"
+              },
+              {
+                "name": "block_number",
+                "type": "core::integer::u64"
+              }
+            ],
+            "outputs": [],
             "state_mutability": "external"
           },
           {
@@ -928,6 +1001,85 @@
       },
       {
         "type": "event",
+        "name": "dojo::world::world_contract::world::ExternalContractRegistered",
+        "kind": "struct",
+        "members": [
+          {
+            "name": "namespace",
+            "type": "core::byte_array::ByteArray",
+            "kind": "key"
+          },
+          {
+            "name": "contract_name",
+            "type": "core::byte_array::ByteArray",
+            "kind": "key"
+          },
+          {
+            "name": "instance_name",
+            "type": "core::byte_array::ByteArray",
+            "kind": "key"
+          },
+          {
+            "name": "contract_selector",
+            "type": "core::felt252",
+            "kind": "key"
+          },
+          {
+            "name": "class_hash",
+            "type": "core::starknet::class_hash::ClassHash",
+            "kind": "data"
+          },
+          {
+            "name": "contract_address",
+            "type": "core::starknet::contract_address::ContractAddress",
+            "kind": "data"
+          },
+          {
+            "name": "block_number",
+            "type": "core::integer::u64",
+            "kind": "data"
+          }
+        ]
+      },
+      {
+        "type": "event",
+        "name": "dojo::world::world_contract::world::ExternalContractUpgraded",
+        "kind": "struct",
+        "members": [
+          {
+            "name": "namespace",
+            "type": "core::byte_array::ByteArray",
+            "kind": "key"
+          },
+          {
+            "name": "instance_name",
+            "type": "core::byte_array::ByteArray",
+            "kind": "key"
+          },
+          {
+            "name": "contract_selector",
+            "type": "core::felt252",
+            "kind": "key"
+          },
+          {
+            "name": "class_hash",
+            "type": "core::starknet::class_hash::ClassHash",
+            "kind": "data"
+          },
+          {
+            "name": "contract_address",
+            "type": "core::starknet::contract_address::ContractAddress",
+            "kind": "data"
+          },
+          {
+            "name": "block_number",
+            "type": "core::integer::u64",
+            "kind": "data"
+          }
+        ]
+      },
+      {
+        "type": "event",
         "name": "dojo::world::world_contract::world::ModelUpgraded",
         "kind": "struct",
         "members": [
@@ -1258,6 +1410,16 @@
             "kind": "nested"
           },
           {
+            "name": "ExternalContractRegistered",
+            "type": "dojo::world::world_contract::world::ExternalContractRegistered",
+            "kind": "nested"
+          },
+          {
+            "name": "ExternalContractUpgraded",
+            "type": "dojo::world::world_contract::world::ExternalContractUpgraded",
+            "kind": "nested"
+          },
+          {
             "name": "ModelUpgraded",
             "type": "dojo::world::world_contract::world::ModelUpgraded",
             "kind": "nested"
@@ -1328,8 +1490,8 @@
   },
   "contracts": [
     {
-      "address": "0x74d59c87b73d536a89c04f43ee35a2772ce8eef9ca0e17cdf0ab21a5802a379",
-      "class_hash": "0x25083821778790b84cd070f32ad114a79929905c4e65155419bf1e48764ab81",
+      "address": "0x6a7924dc002ed97cfbb826a6c79b360c59cb41af89e3a4fd9e5fbf865d1c469",
+      "class_hash": "0x3195a223612e9e7dfff4404b10214c6373eae3107381696ec2f7306e44758ad",
       "abi": [
         {
           "type": "impl",
@@ -1343,7 +1505,7 @@
         },
         {
           "type": "impl",
-          "name": "actions__DeployedContractImpl",
+          "name": "DojoDeployedContractImpl",
           "interface_name": "dojo::meta::interface::IDeployedResource"
         },
         {
@@ -1383,57 +1545,35 @@
         },
         {
           "type": "impl",
-          "name": "SheepASheepActionsImpl",
-          "interface_name": "dojo_sheep_a_sheep::systems::actions::ISheepASheepActions"
-        },
-        {
-          "type": "struct",
-          "name": "dojo_sheep_a_sheep::models::Vec2",
-          "members": [
-            {
-              "name": "x",
-              "type": "core::integer::u32"
-            },
-            {
-              "name": "y",
-              "type": "core::integer::u32"
-            }
-          ]
+          "name": "ActionsImpl",
+          "interface_name": "destiny::systems::actions::IActions"
         },
         {
           "type": "interface",
-          "name": "dojo_sheep_a_sheep::systems::actions::ISheepASheepActions",
+          "name": "destiny::systems::actions::IActions",
           "items": [
             {
               "type": "function",
-              "name": "start_new_game",
+              "name": "write",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u32"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "view",
               "inputs": [],
               "outputs": [
                 {
                   "type": "core::integer::u32"
                 }
               ],
-              "state_mutability": "external"
-            },
-            {
-              "type": "function",
-              "name": "select_tile",
-              "inputs": [
-                {
-                  "name": "game_id",
-                  "type": "core::integer::u32"
-                },
-                {
-                  "name": "position",
-                  "type": "dojo_sheep_a_sheep::models::Vec2"
-                },
-                {
-                  "name": "layer",
-                  "type": "core::integer::u8"
-                }
-              ],
-              "outputs": [],
-              "state_mutability": "external"
+              "state_mutability": "view"
             }
           ]
         },
@@ -1536,7 +1676,7 @@
         },
         {
           "type": "event",
-          "name": "dojo_sheep_a_sheep::systems::actions::actions::Event",
+          "name": "destiny::systems::actions::actions::Event",
           "kind": "enum",
           "variants": [
             {
@@ -1553,11 +1693,10 @@
         }
       ],
       "init_calldata": [],
-      "tag": "dojo_sheep_a_sheep-actions",
-      "selector": "0x67d4ff71d618b293d570936511685f897e92ec0e65c4b69d85d31fd0a9ed5ef",
+      "tag": "destiny-actions",
+      "selector": "0x13dc811311c867aeedb5ded7106674afda2f43693fb3c1e23793db5934bdb6e",
       "systems": [
-        "start_new_game",
-        "select_tile",
+        "write",
         "upgrade"
       ]
     }
@@ -1566,47 +1705,41 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0x7e9e6c440af2f4e78644dde5a3d9d50a1a14adab7864f02b86aafd026976ed2",
-      "tag": "dojo_sheep_a_sheep-Game",
-      "selector": "0x6ff4b103d8711df5993594791e9029fff90f480dfdb53dfe3cf1cce8c611baa"
+      "class_hash": "0x60960b9ad415cbd968f9d61cbb0ac768b19e795240baccb6571a4a298e1157a",
+      "tag": "destiny-Character",
+      "selector": "0x38d2b4713a22412849e1ccf95262a5d74cf20ca7b9a80ecac31084bc5475f8d"
     },
     {
       "members": [],
-      "class_hash": "0xf3b447049851fa96157db02e5ebbb884e5d686ae2cce8f72136ca0607e05c3",
-      "tag": "dojo_sheep_a_sheep-PlayerInventory",
-      "selector": "0x1baf6fc6f5acb9a3e188bc2c07d26b17f385ace1a134724a6e80ed5f176cee6"
+      "class_hash": "0x622bcc4c79b143d90d4a88fdc1e2a0e39d3cec0ec2c2593cddd3c9aefc1e3b1",
+      "tag": "destiny-CharacterStatus",
+      "selector": "0x6069a3f791ec81caf47b3fa9f4f3780f2d787389b1eb5ebf3d38c52097f0008"
     },
     {
       "members": [],
-      "class_hash": "0x4c310279fa234524cfe8d1e63d15e9224da89bdfeaa980811d4947cc8493987",
-      "tag": "dojo_sheep_a_sheep-Tile",
-      "selector": "0x725f074dfcbb40d51f4a96b8b5f044d08d6b945f3ebf45cd6b0466ceea59512"
+      "class_hash": "0x133b588c11b6ae3790cff3fbf85ee4f280fcaa1759b429f3246e1b792715421",
+      "tag": "destiny-Example",
+      "selector": "0x1ccf24c0b2020366018edf0dbaa2f8ba6e768ecdb9978a16717ca866cd74bdf"
+    },
+    {
+      "members": [],
+      "class_hash": "0x69c91a02ad39b109a3f1cf5810cf1e4ca98bd75e61dcac727edda40db7ea077",
+      "tag": "destiny-Nonce",
+      "selector": "0x4ff306275510f587860eda0bcafe883c19f1141fe93e3ec906ab485d7cfe6ec"
+    },
+    {
+      "members": [],
+      "class_hash": "0x405334769f0dcf17185921942362154f903447d90e98a18009c9355926ab6ed",
+      "tag": "destiny-Progress",
+      "selector": "0x2cc846eb83e3ea1343ffb88d0c150ab89bf649affcfb46253099c9e7db8cb9f"
     }
   ],
   "events": [
     {
       "members": [],
-      "class_hash": "0x35aa1d75181b88034c1c08ce620a4a25f5836d7d330477b5aeef2d391b21d07",
-      "tag": "dojo_sheep_a_sheep-GameFinished",
-      "selector": "0x49b57eb2deef25afec27cff08541dcd04a55107e39a6a98aee6c4984f47cdf0"
-    },
-    {
-      "members": [],
-      "class_hash": "0x6d07ffc4f1097e68be3e22147e06922b408d4b757452165ebb841095223637f",
-      "tag": "dojo_sheep_a_sheep-GameStarted",
-      "selector": "0x1103d7bf5d634980a99a844038d2652de8848eea39d9393b15379a58baade93"
-    },
-    {
-      "members": [],
-      "class_hash": "0x28b4a7f6d079afdab55996a41e7aded1822132ed2cc0702480b755c5ed9ef1b",
-      "tag": "dojo_sheep_a_sheep-MatchFound",
-      "selector": "0x15ff1e46a308abc3a9c1585ecbbf7c61cfe47a8940412c441f51269a6a31700"
-    },
-    {
-      "members": [],
-      "class_hash": "0x15324832f235312aee50abf5a5c1e3bdc371fc136a942b023e542fe89083591",
-      "tag": "dojo_sheep_a_sheep-TileSelected",
-      "selector": "0x7bf3eaaf89c559c49aa7de8626dccbc34291ca7aaf3865df5715ddaa6ff43ab"
+      "class_hash": "0x7f0cab80398f3826278b009d124fb9d56e7cdd46bdf170487a3ecb8615255e7",
+      "tag": "destiny-ExampleEvent",
+      "selector": "0x2fb86ccc2014b53fa01ec26d0ac78a36cfed2a612057394e8c184ce1f517d28"
     }
   ],
   "external_contracts": []

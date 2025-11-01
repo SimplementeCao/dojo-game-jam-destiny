@@ -3,11 +3,6 @@ export * from './generated/typescript/models.gen';
 
 // Export specific commonly used types for convenience
 export type {
-  Game,
-  Tile,
-  PlayerInventory,
-  Vec2,
-  TileTypeEnum,
-  GameStateEnum,
+  Example,
   SchemaType
 } from './generated/typescript/models.gen'; 

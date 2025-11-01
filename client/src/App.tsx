@@ -277,6 +277,7 @@ function Home() {
           <button onClick={() => setError(null)}>×</button>
         </div>
       )}
+      {console.log('account', account)}
 
       {showRanking ? (
         <PantallaRanking volverInicio={volverInicio} />

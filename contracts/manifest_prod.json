@@ -2,8 +2,8 @@
   "world": {
     "class_hash": "0x4c60dc46a8ca8bb47675b7b914053cef769afbf0e340523187336b72bd71d1f",
     "address": "0x501c34d15d26638746a8559291eea08834053cd247a5a86b7238730fd5263b8",
-    "seed": "dojo_sheep_a_sheep",
-    "name": "dojo_sheep_a_sheep",
+    "seed": "destiny",
+    "name": "destiny",
     "entrypoints": [
       "uuid",
       "set_metadata",
@@ -1384,11 +1384,11 @@
         {
           "type": "impl",
           "name": "SheepASheepActionsImpl",
-          "interface_name": "dojo_sheep_a_sheep::systems::actions::ISheepASheepActions"
+          "interface_name": "destiny::systems::actions::ISheepASheepActions"
         },
         {
           "type": "struct",
-          "name": "dojo_sheep_a_sheep::models::Vec2",
+          "name": "destiny::models::Vec2",
           "members": [
             {
               "name": "x",
@@ -1402,7 +1402,7 @@
         },
         {
           "type": "interface",
-          "name": "dojo_sheep_a_sheep::systems::actions::ISheepASheepActions",
+          "name": "destiny::systems::actions::ISheepASheepActions",
           "items": [
             {
               "type": "function",
@@ -1425,7 +1425,7 @@
                 },
                 {
                   "name": "position",
-                  "type": "dojo_sheep_a_sheep::models::Vec2"
+                  "type": "destiny::models::Vec2"
                 },
                 {
                   "name": "layer",
@@ -1536,7 +1536,7 @@
         },
         {
           "type": "event",
-          "name": "dojo_sheep_a_sheep::systems::actions::actions::Event",
+          "name": "destiny::systems::actions::actions::Event",
           "kind": "enum",
           "variants": [
             {
@@ -1553,7 +1553,7 @@
         }
       ],
       "init_calldata": [],
-      "tag": "dojo_sheep_a_sheep-actions",
+      "tag": "destiny-actions",
       "selector": "0x67d4ff71d618b293d570936511685f897e92ec0e65c4b69d85d31fd0a9ed5ef",
       "systems": [
         "start_new_game",
@@ -1567,19 +1567,19 @@
     {
       "members": [],
       "class_hash": "0x7e9e6c440af2f4e78644dde5a3d9d50a1a14adab7864f02b86aafd026976ed2",
-      "tag": "dojo_sheep_a_sheep-Game",
+      "tag": "destiny-Game",
       "selector": "0x6ff4b103d8711df5993594791e9029fff90f480dfdb53dfe3cf1cce8c611baa"
     },
     {
       "members": [],
       "class_hash": "0xf3b447049851fa96157db02e5ebbb884e5d686ae2cce8f72136ca0607e05c3",
-      "tag": "dojo_sheep_a_sheep-PlayerInventory",
+      "tag": "destiny-PlayerInventory",
       "selector": "0x1baf6fc6f5acb9a3e188bc2c07d26b17f385ace1a134724a6e80ed5f176cee6"
     },
     {
       "members": [],
       "class_hash": "0x4c310279fa234524cfe8d1e63d15e9224da89bdfeaa980811d4947cc8493987",
-      "tag": "dojo_sheep_a_sheep-Tile",
+      "tag": "destiny-Tile",
       "selector": "0x725f074dfcbb40d51f4a96b8b5f044d08d6b945f3ebf45cd6b0466ceea59512"
     }
   ],
@@ -1587,25 +1587,25 @@
     {
       "members": [],
       "class_hash": "0x35aa1d75181b88034c1c08ce620a4a25f5836d7d330477b5aeef2d391b21d07",
-      "tag": "dojo_sheep_a_sheep-GameFinished",
+      "tag": "destiny-GameFinished",
       "selector": "0x49b57eb2deef25afec27cff08541dcd04a55107e39a6a98aee6c4984f47cdf0"
     },
     {
       "members": [],
       "class_hash": "0x6d07ffc4f1097e68be3e22147e06922b408d4b757452165ebb841095223637f",
-      "tag": "dojo_sheep_a_sheep-GameStarted",
+      "tag": "destiny-GameStarted",
       "selector": "0x1103d7bf5d634980a99a844038d2652de8848eea39d9393b15379a58baade93"
     },
     {
       "members": [],
       "class_hash": "0x28b4a7f6d079afdab55996a41e7aded1822132ed2cc0702480b755c5ed9ef1b",
-      "tag": "dojo_sheep_a_sheep-MatchFound",
+      "tag": "destiny-MatchFound",
       "selector": "0x15ff1e46a308abc3a9c1585ecbbf7c61cfe47a8940412c441f51269a6a31700"
     },
     {
       "members": [],
       "class_hash": "0x15324832f235312aee50abf5a5c1e3bdc371fc136a942b023e542fe89083591",
-      "tag": "dojo_sheep_a_sheep-TileSelected",
+      "tag": "destiny-TileSelected",
       "selector": "0x7bf3eaaf89c559c49aa7de8626dccbc34291ca7aaf3865df5715ddaa6ff43ab"
     }
   ],

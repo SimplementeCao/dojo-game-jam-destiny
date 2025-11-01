@@ -13,7 +13,7 @@ import { SessionPolicies } from "@cartridge/presets";
 
 const actions_contract = getContractByName(
   dojoConfig.manifest,
-  "dojo_sheep_a_sheep",
+  "destiny",
   "actions"
 );
 
@@ -43,14 +43,14 @@ const controller = new ControllerConnector({
       rpcUrl: import.meta.env.VITE_RPC_URL || "http://localhost:5050",
     },
   ],
-  defaultChainId: shortString.encodeShortString("WP_PANDA_PANDA"),
+  defaultChainId: shortString.encodeShortString("WP_DESTINY"),
   policies,
 });
 
 const appchain: Chain = {
-  id: num.toBigInt(shortString.encodeShortString("WP_PANDA_PANDA")),
+  id: num.toBigInt(shortString.encodeShortString("WP_DESTINY")),
   network: "katana",
-  name: "Panda Panda Chain",
+  name: "Destiny Chain",
   rpcUrls: {
     default: import.meta.env.VITE_RPC_URL || "http://localhost:5050",
     public: import.meta.env.VITE_RPC_URL || "http://localhost:5050",
