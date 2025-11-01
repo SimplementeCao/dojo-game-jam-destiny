@@ -36,4 +36,3 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 };
 
 export default HomeScreen;
-

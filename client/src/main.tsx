@@ -19,7 +19,7 @@ async function main() {
       worldAddress: dojoConfig.manifest.world.address,
     },
     domain: {
-      name: 'SHEEP A SHEEP',
+      name: 'DESTINY',
       version: '1.0',
       chainId: 'KATANA',
       revision: '1',

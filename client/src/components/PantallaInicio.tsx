@@ -1,5 +1,5 @@
 import React from 'react';
-import '../assets/panda-font.css';
+import '../assets/CormorantGaramond-Regular.ttf';
 import playImg from '../../public/buttons/play.png';
 
 interface PantallaInicioProps {
@@ -7,7 +7,6 @@ interface PantallaInicioProps {
   loading?: boolean;
   connected?: boolean;
   stats?: any | null; // Using any since PlayerStats doesn't exist
-  verRanking?: () => void;
 }
 
 const PantallaInicio: React.FC<PantallaInicioProps> = ({ 
@@ -15,7 +14,6 @@ const PantallaInicio: React.FC<PantallaInicioProps> = ({
   loading = false, 
   connected = false,
   stats,
-  verRanking
 }) => {
   return (
     <div className="pantalla-inicio pantalla-inicio-background">
@@ -52,22 +50,6 @@ const PantallaInicio: React.FC<PantallaInicioProps> = ({
               <img src={playImg} alt="Iniciar Juego" style={{height: '120px', width: 'auto', display: 'block', margin: '0 auto'}} />
             ) : '🔑 Login'}
         </button>
-
-        {connected && verRanking && !loading && (
-          <button 
-            onClick={verRanking} 
-            className="start-button"
-            style={{ 
-              backgroundColor: '#4CAF50', 
-              marginTop: 0, 
-              fontSize: '14px', 
-              padding: '6px 12px',
-              minHeight: 'auto'
-            }}
-          >
-            🏆 Ranking
-          </button>
-        )}
       </div>
     </div>
   );
