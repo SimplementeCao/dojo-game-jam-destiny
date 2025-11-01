@@ -1,4 +1,3 @@
-/*
 import { useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { useBattleLogic } from '../hooks/useBattleLogic'
@@ -152,5 +151,3 @@ export default function BattleScreen() {
     </div>
   )
 }
-*/
-
