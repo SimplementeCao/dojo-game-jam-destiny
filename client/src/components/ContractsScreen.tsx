@@ -1,14 +1,13 @@
 import React from 'react';
 import '../assets/font.css';
 
-interface HomeScreenProps {
+interface ContractsScreenProps {
   iniciarJuego: () => void;
   loading?: boolean;
   connected?: boolean;
-  stats?: any | null; // Using any since PlayerStats doesn't exist
 }
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ 
+const ContractScreen: React.FC<ContractsScreenProps> = ({ 
   iniciarJuego, 
   loading = false
 }) => {
@@ -35,4 +34,4 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   );
 };
 
-export default HomeScreen;
+export default ContractScreen;

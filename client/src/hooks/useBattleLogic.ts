@@ -115,8 +115,31 @@ export const useBattleLogic = () => {
         return action;
       });
 
-      // Todos los skills requieren seleccionar un enemigo para mantener el flujo secuencial
-      // Flujo: Hero -> Skill -> Enemy
+      const requiresTarget = skillIdNum === 1 || skillIdNum === 2; // Basic Attack y Special Attack
+      
+      if (!requiresTarget) {
+        // Para defend, no necesitamos enemigo (o podría ser auto-heal)
+        const finalActions = updatedActions.map((action) => {
+          if (action.heroId === prev.selectedHero) {
+            return { ...action, targetEnemyId: null, completed: true };
+          }
+          return action;
+        });
+
+        // Pasar al siguiente héroe o completar turno
+        const nextHeroIndex = prev.currentHeroIndex + 1;
+        const allCompleted = finalActions.every((action) => action.completed);
+
+        return {
+          ...prev,
+          phase: allCompleted ? 'COMPLETE' : 'SELECT_HERO',
+          selectedHero: null,
+          selectedSkill: null,
+          heroActions: finalActions,
+          currentHeroIndex: allCompleted ? prev.currentHeroIndex : nextHeroIndex,
+        };
+      }
+
       return {
         ...prev,
         phase: 'SELECT_ENEMY',

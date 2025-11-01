@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAccount, useDisconnect } from '@starknet-react/core'
 
@@ -15,54 +15,19 @@ function getInitialUnlocked(): LevelId {
 export default function LevelsScreen() {
   const navigate = useNavigate()
   const [unlocked, setUnlocked] = useState<LevelId>(getInitialUnlocked())
-  const { account } = useAccount()
+  const { account, address, status } = useAccount()
   const { disconnect } = useDisconnect()
-  const wasConnectedRef = useRef(false)
-  const hasRedirectedRef = useRef(false)
+
+  const shortAddr = (addr?: string) => addr ? `${addr.slice(0,6)}...${addr.slice(-4)}` : ''
 
   useEffect(() => {
     localStorage.setItem('destiny_unlocked_level', String(unlocked))
   }, [unlocked])
 
-  // Track si el usuario estaba conectado anteriormente
-  useEffect(() => {
-    if (account) {
-      wasConnectedRef.current = true
-      hasRedirectedRef.current = false // Reset cuando se reconecta
-    }
-  }, [account])
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!account && !hasRedirectedRef.current && !wasConnectedRef.current) {
-        console.log('⚠️ No hay wallet conectada, redirigiendo a HomeScreen...')
-        hasRedirectedRef.current = true
-        navigate('/')
-      }
-    }, 500) // Esperar 500ms para dar tiempo a que se sincronice el estado de conexión
-
-    return () => clearTimeout(timer)
-  }, [account, navigate])
-
-  // Redirigir cuando se desconecta DESPUÉS de haber estado conectado
-  useEffect(() => {
-    if (!account && wasConnectedRef.current && !hasRedirectedRef.current) {
-      console.log('🚪 Wallet desconectada, redirigiendo a HomeScreen...')
-      wasConnectedRef.current = false
-      hasRedirectedRef.current = true
-      navigate('/')
-    }
-  }, [account, navigate])
-
   const handleSelect = (level: LevelId) => {
     if (level > unlocked) return
     navigate(`/scene/${level}`)
     if (level < 3 && unlocked === level) setUnlocked((level + 1) as LevelId)
-  }
-
-  const handleLogout = async () => {
-    console.log('🚪 Ejecutando logout...')
-    await disconnect()
   }
 
   return (
@@ -72,9 +37,10 @@ export default function LevelsScreen() {
         <div className={`status-line ${account ? 'ok' : 'warn'}`}>
           {account ? 'CONNECTED' : 'DISCONNECTED'}
         </div>
+        <div className="status-addr">{shortAddr(address)}</div>
         <button
           className="status-action"
-          onClick={() => account ? handleLogout() : navigate('/')}
+          onClick={() => account ? disconnect() : navigate('/')}
         >
           {account ? 'LOGOUT' : 'LOGIN'}
         </button>
