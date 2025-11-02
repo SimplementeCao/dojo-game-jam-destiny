@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-// import { useBattleLogic } from '../hooks/useBattleLogic'
 import '../App.css'
-// import { getSkillsIdsByHeroId, getSkillById } from '../utils/battleUtils'
 import { useBattleData } from '../hooks/useBattleData'
 import { dojoConfig } from '../dojo/dojoConfig'
 import { useGameActions } from '../hooks/useGameActions'
@@ -23,12 +21,13 @@ export default function BattleScreen() {
   const { battleId } = useParams()
   const [heroesStatus, setHeroesStatus] = useState<any[]>([])
   const [monstersStatus, setMonstersStatus] = useState<any[]>([])
+  const [selectedHero, setSelectedHero] = useState<number | null>(null)
   const { battle } = useBattleData(Number(battleId || 0))
   const { play } = useGameActions();
   const [floatingAnimations, setFloatingAnimations] = useState<FloatingAnimation[]>([])
-  // Estado para rastrear qué personajes están en modo hit/dmg
   const [characterAnimations, setCharacterAnimations] = useState<{ [characterId: number]: 'hit' | 'dmg' | 'idle' }>({})
-
+  const [actions, setActions] = useState<number[]>([]) 
+  const [tempAction, setTempAction] = useState<number>(0) 
   const loadAllStatuses = useRef<(() => Promise<void>) | null>(null)
   const heroesRefs = useRef<{ [key: number]: HTMLDivElement | null }>({})
   const monstersRefs = useRef<{ [key: number]: HTMLDivElement | null }>({})
@@ -155,13 +154,21 @@ export default function BattleScreen() {
     const refs = isMonster ? monstersRefs.current : heroesRefs.current
     const element = refs[characterId]
     
-    if (!element) return null
+    console.log('📍 Buscando posición para character_id:', characterId, 'isMonster:', isMonster, 'element:', !!element)
+    
+    if (!element) {
+      console.warn('⚠️ No se encontró elemento para character_id:', characterId, 'Refs disponibles:', Object.keys(refs))
+      return null
+    }
     
     const rect = element.getBoundingClientRect()
-    return {
+    const position = {
       x: rect.left + rect.width / 2,
       y: rect.top + rect.height / 2
     }
+    
+    console.log('✅ Posición encontrada:', position)
+    return position
   }
 
   // Función para cambiar temporalmente la animación de un personaje
@@ -184,7 +191,13 @@ export default function BattleScreen() {
     const id = `anim-${Date.now()}-${Math.random()}`
     const animation: FloatingAnimation = { id, value, x, y, color, critical, label }
     
-    setFloatingAnimations(prev => [...prev, animation])
+    console.log('🎬 Agregando animación flotante:', { id, value, x, y, color, critical, label })
+    
+    setFloatingAnimations(prev => {
+      const newAnimations = [...prev, animation]
+      console.log('📊 Total animaciones:', newAnimations.length)
+      return newAnimations
+    })
     
     // Remover la animación después de que termine
     setTimeout(() => {
@@ -193,7 +206,7 @@ export default function BattleScreen() {
   }
 
   const handlePlay = async () => {
-    const result = await play(["001", "111", "221"]);
+    const result = await play(["005", "111", "221"]);
     if (result) {
       // Esperar un momento para que los refs estén actualizados
       await new Promise(resolve => setTimeout(resolve, 100))
@@ -244,18 +257,18 @@ export default function BattleScreen() {
             const { battle_id, from_idx, to_idx, buff_id, amount, is_monster } = event.data;
             console.log(`🔥 Buff event: { battle_id: ${battle_id}, from_idx: ${from_idx}, to_idx: ${to_idx}, buff_id: ${buff_id}, amount: ${amount}, is_monster: ${is_monster} }`);
             
-            const attackerIsMonster = parseToDecimal(is_monster) === 1
-            const targetIsMonster = !attackerIsMonster
+            // Buff solo se aplica entre aliados, así que from_idx y to_idx están en el mismo array
+            const isMonster = parseToDecimal(is_monster) === 1
             
-            const fromCharacterId = getCharacterIdFromIndex(parseToDecimal(from_idx), attackerIsMonster)
-            const toCharacterId = getCharacterIdFromIndex(parseToDecimal(to_idx), targetIsMonster)
+            const fromCharacterId = getCharacterIdFromIndex(parseToDecimal(from_idx), isMonster)
+            const toCharacterId = getCharacterIdFromIndex(parseToDecimal(to_idx), isMonster)
             
             if (fromCharacterId !== null) {
               setCharacterAnimation(fromCharacterId, 'hit')
             }
             
             if (toCharacterId !== null) {
-              const position = getCharacterPosition(toCharacterId, targetIsMonster)
+              const position = getCharacterPosition(toCharacterId, isMonster)
               if (position) {
                 const amountValue = parseToDecimal(amount)
                 addFloatingAnimation(
@@ -302,18 +315,18 @@ export default function BattleScreen() {
             const { battle_id, from_idx, to_idx, amount, is_monster } = event.data;
             console.log(`🔥 Heal event: { battle_id: ${battle_id}, from_idx: ${from_idx}, to_idx: ${to_idx}, amount: ${amount}, is_monster: ${is_monster} }`);
             
-            const attackerIsMonster = parseToDecimal(is_monster) === 1
-            const targetIsMonster = !attackerIsMonster
+            // Heal solo se aplica entre aliados, así que from_idx y to_idx están en el mismo array
+            const isMonster = parseToDecimal(is_monster) === 1
             
-            const fromCharacterId = getCharacterIdFromIndex(parseToDecimal(from_idx), attackerIsMonster)
-            const toCharacterId = getCharacterIdFromIndex(parseToDecimal(to_idx), targetIsMonster)
+            const fromCharacterId = getCharacterIdFromIndex(parseToDecimal(from_idx), isMonster)
+            const toCharacterId = getCharacterIdFromIndex(parseToDecimal(to_idx), isMonster)
             
             if (fromCharacterId !== null) {
               setCharacterAnimation(fromCharacterId, 'hit')
             }
             
             if (toCharacterId !== null) {
-              const position = getCharacterPosition(toCharacterId, targetIsMonster)
+              const position = getCharacterPosition(toCharacterId, isMonster)
               if (position) {
                 const amountValue = parseToDecimal(amount)
                 addFloatingAnimation(
@@ -399,106 +412,47 @@ export default function BattleScreen() {
       }, timeUntilAllAnimationsEnd);
     }
   }
-  
-  // const {
-  //   battleState,
-  //   selectHero,
-  //   selectEnemy,
-  //   resetTurn,
-  //   getHeroActions,
-  //   getCompletedActionsForBackend,
-  //   selectSkill,
-  // } = useBattleLogic()
 
-  // const hasProcessedTurn = useRef(false)
-  // const heroActions = getHeroActions()
+  const [selectionStep, setSelectionStep] = useState<'hero' | 'skill' | 'enemy'>('hero');
 
-  // const selectedHeroClass = (heroId: HeroId) => {
-  //   if (battleState.selectedHero === heroId) return 'selected'
-  //   const action = heroActions.find((a) => a.heroId === heroId)
-  //   if (action?.completed) return 'completed'
-  //   if (battleState.phase === 'SELECT_HERO' && action && !action.completed) return 'selectable'
-  //   return ''
-  // }
+  // All actions must be numbers (and arrays of number), not strings.
+  // We'll compose the action step-by-step as numbers, always keeping 3 digit format for logs/UI, but store as numbers.
 
-  // const selectedEnemyClass = () => {
-  //   if (battleState.phase === 'SELECT_ENEMY' && battleState.selectedSkill) return 'selectable'
-  //   return ''
-  // }
+  const handleHeroClick = (heroIndex: number) => {
+    if (selectionStep !== 'hero') return;
+    // 100 * index (skill and target come later)
+    const heroNum = heroIndex * 100;
+    setTempAction(heroNum);
+    setSelectionStep('skill');
+    console.log(`hero index: ${heroIndex} (seleccionado), Temp action: ${String(heroNum).padStart(3, "0")}`);
+  };
 
-  // const getHero = (heroId: HeroId) => battleState.heroes.find((h) => h.id === heroId)
-  // const getEnemy = (enemyId: EnemyId) => battleState.enemies.find((e) => e.id === enemyId)
+  const handleSkillClick = (skillIndex: number) => {
+    if (selectionStep !== 'skill') return;
+    setTempAction(prev => {
+      // prev is a number (e.g. H00), add skill as ones digit
+      const num = prev + skillIndex;
+      const result = num;
+      console.log(`skill index: ${skillIndex} (seleccionado), Temp action: ${String(result).padStart(3, '0')}`);
+      return result;
+    });
+    setSelectionStep('enemy');
+  };
 
-  // // Obtener los skills del héroe seleccionado
-  // const selectedHeroSkills = useMemo(() => {
-  //   if (battleState.selectedHero === null) return []
-    
-  //   const hero = getHero(battleState.selectedHero)
-  //   if (!hero) return []
-    
-  //   // Si el héroe tiene skills en su array, usarlos (convertir SkillId enum a number)
-  //   if (hero.skills && hero.skills.length > 0) {
-  //     return hero.skills.map(skill => {
-  //       // Convertir SkillId enum a número si es necesario
-  //       const skillId = typeof skill.id === 'number' ? skill.id : Number(skill.id)
-  //       return skillId
-  //     })
-  //   }
-    
-  //   // Si no, usar la función getSkillsIdsByHeroId como fallback
-  //   return getSkillsIdsByHeroId(battleState.selectedHero)
-  // }, [battleState.selectedHero, battleState.heroes])
+  const handleMonsterClick = (monsterIndex: number) => {
+    if (selectionStep !== 'enemy') return;
+    setTempAction(prev => {
+      // prev is Hero+Skill, add monsterIndex * 10 to get full action number
+      const num = prev + monsterIndex * 10;
+      const result = num;
+      console.log(`monster index: ${monsterIndex} (seleccionado), Final action: ${String(result).padStart(3, '0')}`);
+      setActions(a => [...a, result]);
+      setSelectionStep('hero');
+      setTempAction(0); // Reset temp action for next sequence
+      return 0;
+    });
+  };
 
-  // // Función helper para obtener el icono del skill
-  // const getSkillIcon = (skillId: number): string => {
-  //   const skill = getSkillById(skillId)
-  //   if (!skill) return '❓'
-    
-  //   // Determinar icono según el tipo de skill
-  //   if (skill.damage > 0) return '⚔️'
-  //   if (skill.heal > 0) return '❤️'
-  //   if (skill.buff > 0) return '✨'
-  //   if (skill.debuff > 0) return '💫'
-  //   return '🛡️'
-  // }
-
-  // const handleHeroClick = (heroId: HeroId) => {
-  //   // Solo permitir seleccionar héroe en la fase SELECT_HERO
-  //     if (battleState.phase === 'SELECT_HERO') {
-  //       const heroAction = battleState.heroActions.find((a) => a.heroId === heroId)
-  //       if (heroAction && !heroAction.completed) {
-  //         selectHero(heroId)
-  //       }
-  //     }
-  // }
-
-  // const handleEnemyClick = (enemyId: EnemyId) => {
-  //   // Solo permitir seleccionar enemigo en la fase SELECT_ENEMY cuando hay héroe y skill seleccionados
-  //   if (battleState.phase === 'SELECT_ENEMY' && battleState.selectedHero !== null && battleState.selectedSkill !== null) {
-  //     selectEnemy(enemyId)
-  //   }
-  // }
-
-  // useEffect(() => {
-  //   const allCompleted = heroActions.every((a) => a.completed)
-  //   const thirdHeroCompleted = heroActions.find((a) => a.heroId === HeroId.HERO)?.completed
-
-  //   if (allCompleted && thirdHeroCompleted && !hasProcessedTurn.current) {
-  //     hasProcessedTurn.current = true
-  //     const completedActions = getCompletedActionsForBackend()
-  //     if (completedActions) {
-  //       const timer = setTimeout(() => {
-  //         resetTurn()
-  //         hasProcessedTurn.current = false
-  //       }, 1000)
-  //       return () => clearTimeout(timer)
-  //     } else {
-  //       hasProcessedTurn.current = false
-  //     }
-  //   }
-
-  //   if (!allCompleted || !thirdHeroCompleted) hasProcessedTurn.current = false
-  // }, [battle, heroActions, getCompletedActionsForBackend, resetTurn])
 
   return (
     <div className={`escenario-root ${battle?.level}`}>
@@ -510,18 +464,20 @@ export default function BattleScreen() {
           PLAY
         </button>
 
-        {/* TOP: Monstruos + espacio vacío */}
+        {/* TOP: infoskills Monstruos  */}
         <div className="contenedor-top">
         <div className="div-espacio-info">asdfg</div>
 
         <div className="div-espacio-monsters"></div>
           <div className="monsters-status-list">
-            {monstersStatus?.map((status: any) => (
+            {monstersStatus?.map((status: any, index: number) => (
               <div 
                 key={status.character_id} 
                 className="character-wrapper"
                 ref={(el) => {
-                  monstersRefs.current[status.character_id] = el
+                  if (status.character_id) {
+                    monstersRefs.current[status.character_id] = el
+                  }
                 }}
               >
                 <img
@@ -531,6 +487,7 @@ export default function BattleScreen() {
                     'idle'
                   }.gif`}
                   alt={`Monster ${status.character_id}`}
+                  onClick={() => handleMonsterClick(index)}
                 />
                 <div className="hp-bar-container">
                   <span className="hp-label">HP</span>
@@ -555,16 +512,17 @@ export default function BattleScreen() {
           </div>
         </div>
 
-        {/* BOTTOM: Héroes + skills/info */}
-
+        {/* BOTTOM: Héroes + skills*/}
         <div className="contenedor-bottom">
           <div className="heroes-status-list">
-            {heroesStatus?.map((status: any) => (
+            {heroesStatus?.map((status: any, index: number) => (
               <div 
                 key={status.character_id} 
                 className="character-wrapper"
                 ref={(el) => {
-                  heroesRefs.current[status.character_id] = el
+                  if (status.character_id) {
+                    heroesRefs.current[status.character_id] = el
+                  }
                 }}
               >
                 <img
@@ -574,6 +532,7 @@ export default function BattleScreen() {
                     'idle'
                   }.gif`}
                   alt={`Heroe ${status.character_id}`}
+                  onClick={() => {handleHeroClick(index)}}
                 />
                 <div className="hp-bar-container">
                   <span className="hp-label">HP</span>
@@ -596,8 +555,14 @@ export default function BattleScreen() {
               </div>
             ))}
           </div>
-          <div className="div-skills-info">
-          <div className="div-espacio-skills">asdfg</div>
+          <div className="div-espacio-skills"> 
+            {/* agrega botones de skills por ahora solo botones de prueba usando ya los css skill-icon skills-buttons-container skills-buttons */}(
+              <div className="skills-buttons-container">
+                <button className="skill-icon" onClick={() => handleSkillClick(1)}>1</button>
+                <button className="skill-icon" onClick={() => handleSkillClick(2)}>2</button>
+                <button className="skill-icon" onClick={() => handleSkillClick(3)}>3</button>
+              </div>
+            )
           </div>
         </div>
 
@@ -615,7 +580,7 @@ export default function BattleScreen() {
               setFloatingAnimations(prev => prev.filter(a => a.id !== animation.id))
             }}
           />
-        ))}
+        ))}  
       </div>
     </div>
     //   {/* Botones de habilidades - mostrar dinámicamente según el héroe seleccionado */}

@@ -10,7 +10,6 @@ pub trait IActions<T> {
     fn play(ref self: T, actions: Span<(u32, u32, u32)>);
 }
 
-
 #[dojo::contract]
 pub mod actions {
     use dojo::event::EventStorage;
@@ -32,7 +31,7 @@ pub mod actions {
                 @Character {
                     id: 1,
                     name: "Aloy",
-                    skills: [POWER_ATTACK_ACTION_ID, BUFF_EVASION_ACTION_ID, BUFF_ATTACK_ACTION_ID]
+                    skills: [POWER_ATTACK_ACTION_ID, BUFF_ATTACK_ACTION_ID, DEBUFF_DEFENSE_ACTION_ID]
                         .span(),
                     health: 200,
                     attack: 20,
@@ -94,7 +93,7 @@ pub mod actions {
                 @Character {
                     id: 5,
                     name: "Assassin",
-                    skills: [POWER_ATTACK_ACTION_ID, DEBUFF_DEFENSE_ACTION_ID].span(),
+                    skills: [POWER_ATTACK_ACTION_ID, DEBUFF_DEFENSE_ACTION_ID, BUFF_CRITICAL_CHANCE_ACTION_ID].span(),
                     health: 70,
                     attack: 10,
                     defense: 15,
@@ -109,9 +108,8 @@ pub mod actions {
                     id: 6,
                     name: "Overlord",
                     skills: [
-                        FLAME_ATTACK_ACTION_ID, DEBUFF_ATTACK_ACTION_ID,
-                        DEBUFF_CRITICAL_CHANCE_ACTION_ID, DEBUFF_DEFENSE_ACTION_ID,
-                        DEBUFF_EVASION_ACTION_ID,
+                        BASIC_ATTACK_ACTION_ID,
+                        DEBUFF_DEFENSE_ACTION_ID, MASS_HEAL_ACTION_ID, MASS_HEAL_ACTION_ID, MASS_HEAL_ACTION_ID
                     ]
                         .span(),
                     health: 100,
@@ -129,7 +127,7 @@ pub mod actions {
                     name: "Ornstein",
                     skills: [
                         BASIC_ATTACK_ACTION_ID, POWER_ATTACK_ACTION_ID, FLAME_ATTACK_ACTION_ID,
-                        DEBUFF_DEFENSE_ACTION_ID,
+                        DEBUFF_DEFENSE_ACTION_ID, BUFF_ATTACK_ACTION_ID, BUFF_CRITICAL_CHANCE_ACTION_ID
                     ]
                         .span(),
                     health: 180,
@@ -383,29 +381,27 @@ pub mod actions {
                     .between(0, 100) < (25 + from_status.critical_chance)
                     .try_into()
                     .unwrap();
+
                 if critical_hit {
                     damage = damage * 2;
                 }
 
-                to_status
-                    .current_hp =
-                        if damage > (to_status.current_hp + to_status.defense) {
-                            0
-                        } else {
-                            to_status.current_hp + to_status.defense - damage
-                        };
+                let actual_damage = damage - to_status.defense;
+                to_status.current_hp = if actual_damage > to_status.current_hp {
+                    0
+                } else {
+                    to_status.current_hp - actual_damage
+                };
                 world
-                    .emit_event(@DamageEvent { battle_id, from_idx, to_idx, critical_hit, damage, is_monster: is_monster_attack });
+                    .emit_event(@DamageEvent { battle_id, from_idx, to_idx, critical_hit, damage: actual_damage, is_monster: is_monster_attack });
                 world.write_model(@to_status);
             } else if is_heal_action(action_id) {
-                let amount = if action_id == HEAL_ACTION_ID {
-                    20
-                } else if action_id == MASS_HEAL_ACTION_ID {
-                    30
+                let amount = 30;
+                let mut to_status: CharacterStatus = if is_monster_attack {
+                    world.read_model((battle_id, *battle.monsters_ids[to_idx]))
                 } else {
-                    0
+                    world.read_model((battle_id, *battle.heroes_ids[to_idx]))
                 };
-
                 to_status
                     .current_hp =
                         if to_status.current_hp + amount > to_status.max_hp {
@@ -417,13 +413,15 @@ pub mod actions {
                 world.write_model(@to_status);
             }
             if is_buff_action(action_id) {
+                let mut to_status: CharacterStatus = if is_monster_attack {
+                    world.read_model((battle_id, *battle.monsters_ids[to_idx]))
+                } else {
+                    world.read_model((battle_id, *battle.heroes_ids[to_idx]))
+                };
+
                 let amount = if action_id == BUFF_DEFENSE_ACTION_ID {
                     10
                 } else if action_id == BUFF_ATTACK_ACTION_ID {
-                    20
-                } else if action_id == BUFF_CRITICAL_CHANCE_ACTION_ID {
-                    10
-                } else if action_id == BUFF_EVASION_ACTION_ID {
                     10
                 } else {
                     0
@@ -435,8 +433,6 @@ pub mod actions {
                     to_status.attack = to_status.attack + amount;
                 } else if action_id == BUFF_CRITICAL_CHANCE_ACTION_ID {
                     to_status.critical_chance = to_status.critical_chance + amount;
-                } else if action_id == BUFF_EVASION_ACTION_ID {
-                    to_status.evasion = to_status.evasion + amount;
                 }
                 world
                     .emit_event(
@@ -447,10 +443,6 @@ pub mod actions {
                 let amount = if action_id == DEBUFF_DEFENSE_ACTION_ID {
                     10
                 } else if action_id == DEBUFF_ATTACK_ACTION_ID {
-                    20
-                } else if action_id == DEBUFF_CRITICAL_CHANCE_ACTION_ID {
-                    10
-                } else if action_id == DEBUFF_EVASION_ACTION_ID {
                     10
                 } else {
                     0
@@ -460,11 +452,7 @@ pub mod actions {
                     to_status.defense = to_status.defense - amount;
                 } else if action_id == DEBUFF_ATTACK_ACTION_ID {
                     to_status.attack = to_status.attack - amount;
-                } else if action_id == DEBUFF_CRITICAL_CHANCE_ACTION_ID {
-                    to_status.critical_chance = to_status.critical_chance - amount;
-                } else if action_id == DEBUFF_EVASION_ACTION_ID {
-                    to_status.evasion = to_status.evasion - amount;
-                }
+                } else {}
                 world
                     .emit_event(
                         @DebuffEvent { battle_id, from_idx, to_idx, debuff_id: action_id, amount, is_monster: is_monster_attack },
@@ -540,19 +528,12 @@ pub mod actions {
     const BASIC_ATTACK_ACTION_ID: u32 = 1;
     const POWER_ATTACK_ACTION_ID: u32 = 2;
     const FLAME_ATTACK_ACTION_ID: u32 = 3;
-
-    const HEAL_ACTION_ID: u32 = 11;
-    const MASS_HEAL_ACTION_ID: u32 = 12;
-
-    const BUFF_DEFENSE_ACTION_ID: u32 = 21;
-    const BUFF_ATTACK_ACTION_ID: u32 = 22;
-    const BUFF_CRITICAL_CHANCE_ACTION_ID: u32 = 23;
-    const BUFF_EVASION_ACTION_ID: u32 = 24;
-
-    const DEBUFF_DEFENSE_ACTION_ID: u32 = 31;
-    const DEBUFF_ATTACK_ACTION_ID: u32 = 32;
-    const DEBUFF_CRITICAL_CHANCE_ACTION_ID: u32 = 33;
-    const DEBUFF_EVASION_ACTION_ID: u32 = 34;
+    const MASS_HEAL_ACTION_ID: u32 = 4;
+    const BUFF_DEFENSE_ACTION_ID: u32 = 5;
+    const BUFF_ATTACK_ACTION_ID: u32 = 6;
+    const BUFF_CRITICAL_CHANCE_ACTION_ID: u32 = 7;
+    const DEBUFF_DEFENSE_ACTION_ID: u32 = 8;
+    const DEBUFF_ATTACK_ACTION_ID: u32 = 9;
 
     fn is_attack_action(action_id: u32) -> bool {
         action_id == BASIC_ATTACK_ACTION_ID
@@ -561,20 +542,17 @@ pub mod actions {
     }
 
     fn is_heal_action(action_id: u32) -> bool {
-        action_id == HEAL_ACTION_ID || action_id == MASS_HEAL_ACTION_ID
+        action_id == MASS_HEAL_ACTION_ID
     }
 
     fn is_buff_action(action_id: u32) -> bool {
         action_id == BUFF_DEFENSE_ACTION_ID
             || action_id == BUFF_ATTACK_ACTION_ID
             || action_id == BUFF_CRITICAL_CHANCE_ACTION_ID
-            || action_id == BUFF_EVASION_ACTION_ID
     }
 
     fn is_debuff_action(action_id: u32) -> bool {
         action_id == DEBUFF_DEFENSE_ACTION_ID
             || action_id == DEBUFF_ATTACK_ACTION_ID
-            || action_id == DEBUFF_CRITICAL_CHANCE_ACTION_ID
-            || action_id == DEBUFF_EVASION_ACTION_ID
     }
 }

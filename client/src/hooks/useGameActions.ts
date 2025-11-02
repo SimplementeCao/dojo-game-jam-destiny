@@ -81,79 +81,96 @@ export const useGameActions = () => {
       if (tx.isSuccess()) {
         const events = tx.events;
         const parsed_events: { key: string, data: any }[] = [];
+        // Helper para convertir hex/string/bigint a number
+        const toNumber = (val: any) => {
+          if (typeof val === 'number') return val;
+          if (typeof val === 'bigint') return Number(val);
+          if (typeof val === 'string') {
+            if (val.startsWith('0x') || val.startsWith('0X')) {
+              return parseInt(val, 16);
+            }
+            return parseInt(val, 10);
+          }
+          try {
+            return Number(val);
+          } catch {
+            return 0;
+          }
+        };
+
         events.forEach((event) => {
           if (event.keys[1] == getEventKey("DamageEvent")) {
             console.log("[play] - Damage event: ", event);
             parsed_events.push({
               key: "DamageEvent",
               data: {
-                battle_id: event.data[1],
-                from_idx: event.data[3],
-                to_idx: event.data[4],
-                critical_hit: event.data[5],
-                damage: event.data[6],
-                is_monster: event.data[7],
+                battle_id: toNumber(event.data[1]),
+                from_idx: toNumber(event.data[3]),
+                to_idx: toNumber(event.data[4]),
+                critical_hit: toNumber(event.data[5]),
+                damage: toNumber(event.data[6]),
+                is_monster: toNumber(event.data[7]),
               },
             });
           } else if (event.keys[1] == getEventKey("BuffEvent")) {
             parsed_events.push({
               key: "BuffEvent",
               data: {
-                battle_id: event.data[1],
-                from_idx: event.data[3],
-                to_idx: event.data[4],
-                buff_id: event.data[5],
-                amount: event.data[6],
-                is_monster: event.data[7],
+                battle_id: toNumber(event.data[1]),
+                from_idx: toNumber(event.data[3]),
+                to_idx: toNumber(event.data[4]),
+                buff_id: toNumber(event.data[5]),
+                amount: toNumber(event.data[6]),
+                is_monster: toNumber(event.data[7]),
               },
             });
           } else if (event.keys[1] == getEventKey("DebuffEvent")) {
             parsed_events.push({
               key: "DebuffEvent",
               data: {
-                battle_id: event.data[1],
-                from_idx: event.data[3],
-                to_idx: event.data[4],
-                debuff_id: event.data[5],
-                amount: event.data[6],
-                is_monster: event.data[7],
+                battle_id: toNumber(event.data[1]),
+                from_idx: toNumber(event.data[3]),
+                to_idx: toNumber(event.data[4]),
+                debuff_id: toNumber(event.data[5]),
+                amount: toNumber(event.data[6]),
+                is_monster: toNumber(event.data[7]),
               },
             });
           } else if (event.keys[1] == getEventKey("HealEvent")) {
             parsed_events.push({
               key: "HealEvent",
               data: {
-                battle_id: event.data[1],
-                from_idx: event.data[3],
-                to_idx: event.data[4],
-                amount: event.data[5],
-                is_monster: event.data[6],
+                battle_id: toNumber(event.data[1]),
+                from_idx: toNumber(event.data[3]),
+                to_idx: toNumber(event.data[4]),
+                amount: toNumber(event.data[5]),
+                is_monster: toNumber(event.data[6]),
               },
             });
           } else if (event.keys[1] == getEventKey("MissEvent")) {
             parsed_events.push({
               key: "MissEvent",
               data: {
-                battle_id: event.data[1],
-                from_idx: event.data[3],
-                to_idx: event.data[4],
-                is_monster: event.data[5],
+                battle_id: toNumber(event.data[1]),
+                from_idx: toNumber(event.data[3]),
+                to_idx: toNumber(event.data[4]),
+                is_monster: toNumber(event.data[5]),
               },
             });
           } else if (event.keys[1] == getEventKey("PlayerWinEvent")) {
             parsed_events.push({
               key: "PlayerWinEvent",
               data: {
-                battle_id: event.data[1],
-                player: event.data[3],
+                battle_id: toNumber(event.data[1]),
+                player: toNumber(event.data[3]),
               },
             });
           } else if (event.keys[1] == getEventKey("PlayerLoseEvent")) {
             parsed_events.push({
               key: "PlayerLoseEvent",
               data: {
-                battle_id: event.data[1],
-                player: event.data[3],
+                battle_id: toNumber(event.data[1]),
+                player: toNumber(event.data[3]),
               },
             });
           }

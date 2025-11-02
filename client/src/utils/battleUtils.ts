@@ -1,6 +1,4 @@
-// Utilidades compartidas para la lógica de combate en todos los escenarios
 
-// Defini un objeto skill con las propiedades que necesitamos para el juego
 export interface Skill {
 	id: number
 	name: string
