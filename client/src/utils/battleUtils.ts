@@ -57,4 +57,3 @@ export const isSkillForEnemies = (skillId: number): boolean => {
 	// If it has damage or debuff, it targets enemies
 	return skill.damage > 0 || skill.debuff > 0
 }
-

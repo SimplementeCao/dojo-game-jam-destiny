@@ -2,29 +2,52 @@ import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAccount, useDisconnect } from '@starknet-react/core'
 import { useGameActions } from '../hooks/useGameActions'
+import { useProgressData } from '../hooks/useBattleData'
 
 type LevelId = 1 | 2 | 3
-
 const TOTAL_LEVELS: LevelId[] = [1, 2, 3]
-
-function getInitialUnlocked(): LevelId {
-  const saved = Number(localStorage.getItem('destiny_unlocked_level'))
-  if (saved === 2 || saved === 3) return saved as LevelId
-  return 3
+const LEVEL_DIFFICULTIES: Record<LevelId, string> = {
+  1: 'EASY',
+  2: 'MEDIUM',
+  3: 'HARD'
 }
 
 export default function LevelsScreen() {
   const navigate = useNavigate()
-  const [unlocked, setUnlocked] = useState<LevelId>(getInitialUnlocked())
+  const [unlocked, setUnlocked] = useState<LevelId>()
   const { account } = useAccount()
   const { disconnect } = useDisconnect()
   const wasConnectedRef = useRef(false)
   const hasRedirectedRef = useRef(false)
   const { startBattle } = useGameActions();
 
+  // Check progress for each level to determine unlocked level
+  const playerAddress = account?.address ? String(account.address) : undefined
+  const progress1 = useProgressData(playerAddress, 1)
+  const progress2 = useProgressData(playerAddress, 2)
+  const progress3 = useProgressData(playerAddress, 3)
+
+  // Calculate unlocked level based on completed levels
   useEffect(() => {
-    localStorage.setItem('destiny_unlocked_level', String(unlocked))
-  }, [unlocked])
+    // Esperar a que los datos de progreso se carguen (no loading)
+    if (progress1.loading || progress2.loading || progress3.loading) {
+      return
+    }
+
+    let maxUnlocked: LevelId = 1 // Siempre empezar con nivel 1 desbloqueado
+
+    // Si el nivel 1 está completado, nivel 2 está desbloqueado
+    if (progress1.progress?.completed) {
+      maxUnlocked = 2
+      
+      // Si el nivel 2 también está completado, nivel 3 está desbloqueado
+      if (progress2.progress?.completed) {
+        maxUnlocked = 3
+      }
+    }
+
+    setUnlocked(maxUnlocked)
+  }, [playerAddress, progress1.progress?.completed, progress2.progress?.completed, progress3.progress?.completed, progress1.loading, progress2.loading, progress3.loading])
 
   // Track si el usuario estaba conectado anteriormente
   useEffect(() => {
@@ -37,7 +60,6 @@ export default function LevelsScreen() {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!account && !hasRedirectedRef.current && !wasConnectedRef.current) {
-        console.log('⚠️ No hay wallet conectada, redirigiendo a HomeScreen...')
         hasRedirectedRef.current = true
         navigate('/')
       }
@@ -49,7 +71,6 @@ export default function LevelsScreen() {
   // Redirigir cuando se desconecta DESPUÉS de haber estado conectado
   useEffect(() => {
     if (!account && wasConnectedRef.current && !hasRedirectedRef.current) {
-      console.log('🚪 Wallet desconectada, redirigiendo a HomeScreen...')
       wasConnectedRef.current = false
       hasRedirectedRef.current = true
       navigate('/')
@@ -64,12 +85,11 @@ export default function LevelsScreen() {
   }
 
   const handleLogout = async () => {
-    console.log('🚪 Ejecutando logout...')
     await disconnect()
   }
 
   return (
-    <div className="levels-screen pantalla-inicio-background" aria-label="Levels">
+    <div className="levels-screen" aria-label="Levels">
       {/* Status badge top-right */}
       <div className="status-badge">
         <div className={`status-line ${account ? 'ok' : 'warn'}`}>
@@ -83,9 +103,11 @@ export default function LevelsScreen() {
         </button>
       </div>
 
+      <h1 className="levels-title">CHOOSE YOUR DESTINY</h1>
+
       <div className="levels-grid">
         {TOTAL_LEVELS.map((lv) => {
-          const locked = lv > unlocked
+          const locked = lv > (unlocked ?? 1)
           const cardImage = `/backgrounds/card${lv}.${lv === 3 ? 'webp' : 'png'}`
           return (
             <button
@@ -96,6 +118,9 @@ export default function LevelsScreen() {
               disabled={locked}
               style={{ backgroundImage: `url(${cardImage})` }}
             >
+              <div className={`level-difficulty level-difficulty-${LEVEL_DIFFICULTIES[lv].toLowerCase()}`}>
+                {LEVEL_DIFFICULTIES[lv]}
+              </div>
               {locked && <div className="level-lock" aria-hidden>🔒</div>}
             </button>
           )

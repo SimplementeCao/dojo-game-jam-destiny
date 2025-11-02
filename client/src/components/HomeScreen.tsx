@@ -27,10 +27,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
         marginTop: '24px'
       }}>
         {loading ? (
-          <div className="press-start">LOADING...</div>
+          <div className="CONNECT WITH CONTROLLER">LOADING...</div>
         ) : (
           <div className="press-start" onClick={iniciarJuego}>
-            {connected ? 'PRESS START' : 'CONNECT BY CONTROLLER'}
+            {connected ? 'PRESS START' : 'CONNECT WITH CONTROLLER'}
           </div>
         )}
       </div>

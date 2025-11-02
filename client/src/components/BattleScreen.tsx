@@ -608,136 +608,54 @@ export default function BattleScreen() {
 
   return (
     <div className={`escenario-root ${battle?.level}`}>
-      <style>{`
-        @keyframes fadeInSlideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        
-        @keyframes fadeInSlideRight {
-          from {
-            opacity: 0;
-            transform: translateX(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-      `}</style>
       <div className="contenedor-todo">
         {/* TOP: Monsters infoskills */}
         <div className="contenedor-top">
-        <div className="div-espacio-info" style={{
-          marginLeft: '20px',
-          marginTop: '20px',
-          position: 'relative',
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          paddingRight: '10px'
-        }}>
+        <div className="div-espacio-info">
           {hoveredCharacter ? (
-            <div style={{
-              background: 'rgba(0, 0, 0, 0.85)',
-              border: '2px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '8px',
-              padding: '15px',
-              color: '#fff',
-              fontFamily: "'Press Start 2P', monospace",
-              fontSize: '10px',
-              lineHeight: '1.6',
-              width: '100%',
-              minHeight: '100%',
-              opacity: 0,
-              transform: 'translateY(-10px)',
-              animation: 'fadeInSlideDown 0.3s ease-out forwards',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center'
-            }}>
-              <div style={{ 
-                marginBottom: '10px', 
-                fontSize: '12px', 
-                textAlign: 'center',
-                textDecoration: 'underline',
-                color: hoveredCharacter.isMonster ? '#ff6b6b' : '#4ecdc4'
-              }}>
+            <div className="character-info-box">
+              <div className={`character-info-header ${hoveredCharacter.isMonster ? 'monster' : 'hero'}`}>
                 {hoveredCharacter.isMonster ? 'MONSTER' : 'HERO'} #{hoveredCharacter.status.character_id}
               </div>
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div className="character-stats-list">
+                <div className="character-stat-row">
                   <span>HP:</span>
                   <span>{parseToDecimal(hoveredCharacter.status.current_hp)}/{parseToDecimal(hoveredCharacter.status.max_hp)}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div className="character-stat-row">
                   <span>ATK:</span>
                   <span>{parseToDecimal(hoveredCharacter.status.attack)}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div className="character-stat-row">
                   <span>DEF:</span>
                   <span>{parseToDecimal(hoveredCharacter.status.defense)}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div className="character-stat-row">
                   <span>CRIT:</span>
                   <span>{parseToDecimal(hoveredCharacter.status.critical_chance)}%</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div className="character-stat-row">
                   <span>EVA:</span>
                   <span>{parseToDecimal(hoveredCharacter.status.evasion)}%</span>
                 </div>
               </div>
 
               {hoveredCharacterSkills.length > 0 && (
-                <div style={{
-                  borderTop: '1px solid rgba(255, 255, 255, 0.2)',
-                  paddingTop: '10px',
-                  marginTop: '10px',
-                  opacity: 0,
-                  animation: 'fadeIn 0.4s ease-out 0.2s forwards'
-                }}>
-                  <div style={{
-                    fontSize: '10px',
-                    marginBottom: '8px',
-                    color: hoveredCharacter.isMonster ? '#ff6b6b' : '#4ecdc4'
-                  }}>
+                <div className="character-skill-list">
+                  <div className={`character-skill-list-title ${hoveredCharacter.isMonster ? 'monster' : 'hero'}`}>
                     SKILLS:
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div className="character-skills-container">
                     {hoveredCharacterSkills.map((skillId) => {
                       const skill = getSkillById(skillId)
                       if (!skill) return null
                       return (
-                        <div key={skillId} style={{
-                          fontSize: '8px',
-                          padding: '4px',
-                          background: 'rgba(255, 255, 255, 0.1)',
-                          borderRadius: '4px'
-                        }}>
-                          <div style={{ color: '#fff', marginBottom: '2px' }}>
+                        <div key={skillId} className="character-skill-item">
+                          <div className="character-skill-item-name">
                             {skill.name}
                           </div>
-                          <div style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '7px' }}>
+                          <div className="character-skill-item-description">
                             {skill.description}
                           </div>
                         </div>
@@ -748,27 +666,9 @@ export default function BattleScreen() {
               )}
             </div>
           ) : (
-            <div style={{
-              background: 'rgba(0, 0, 0, 0.6)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              borderRadius: '8px',
-              color: 'rgba(255, 255, 255, 0.6)',
-              fontFamily: "'Press Start 2P', monospace",
-              fontSize: '9px',
-              textAlign: 'center',
-              padding: '20px 15px',
-              lineHeight: '1.8',
-              width: '100%',
-              minHeight: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              opacity: 0,
-              animation: 'fadeIn 0.3s ease-out forwards'
-            }}>
-              <div style={{ marginBottom: '8px' }}>HOVER</div>
-              <div style={{ fontSize: '8px', lineHeight: '1.6' }}>
+            <div className="character-info-box-empty">
+              <div>HOVER</div>
+              <div>
                 Over a character<br/>
                 to see stats
               </div>
@@ -912,101 +812,48 @@ export default function BattleScreen() {
               )
             })}
           </div>
-          <div className="div-espacio-skills" style={{
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            overflowY: 'auto',
-            overflowX: 'hidden',
-            paddingRight: '10px',
-            paddingLeft: '10px',
-            paddingTop: '20px',
-            paddingBottom: '20px'
-          }}> 
+          <div className="div-espacio-skills"> 
             {/* Always visible info box - now contains everything */}
-            <div style={{
-              background: 'rgba(0, 0, 0, 0.85)',
-              border: '2px solid rgba(78, 205, 196, 0.5)',
-              borderRadius: '8px',
-              padding: '15px',
-              width: '100%',
-              minHeight: '100%',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '15px',
-              justifyContent: selectionStep === 'skill' ? 'flex-start' : 'center',
-              opacity: 0,
-              animation: 'fadeIn 0.3s ease-out forwards'
-            }}>
+            <div className={`skills-info-box ${selectionStep === 'skill' ? 'has-skills' : ''}`}>
               {selectionStep === 'hero' && (
-                <div style={{
-                  color: '#4ecdc4',
-                  fontFamily: "'Press Start 2P', monospace",
-                  fontSize: '10px',
-                  textAlign: 'center',
-                  lineHeight: '1.6',
-                  width: '100%'
-                }}>
-                  <div style={{ marginBottom: '8px', fontSize: '11px', textDecoration: 'underline' }}>
+                <div className="selection-message selection-message-hero">
+                  <div className="selection-message-title">
                     CHOOSE A HERO
                   </div>
-                  <div style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '9px' }}>
+                  <div className="selection-message-subtitle">
                     Click on a hero to execute their action
                   </div>
                 </div>
               )}
               
               {selectionStep === 'skill' && selectedHeroSkills.length > 0 && (
-                <div style={{
-                  color: '#4ecdc4',
-                  fontFamily: "'Press Start 2P', monospace",
-                  fontSize: '10px',
-                  textAlign: 'center',
-                  lineHeight: '1.6',
-                  flexShrink: 0
-                }}>
-                  <div style={{ marginBottom: '8px', fontSize: '11px', textDecoration: 'underline' }}>
+                <div className="selection-message selection-message-skill">
+                  <div className="selection-message-title">
                     CHOOSE A SKILL
                   </div>
-                  <div style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '9px' }}>
+                  <div className="selection-message-subtitle">
                     Select a skill from the available ones below
                   </div>
                 </div>
               )}
               
               {selectionStep === 'enemy' && selectedSkillId !== null && (
-                <div style={{
-                  color: '#ff6b6b',
-                  fontFamily: "'Press Start 2P', monospace",
-                  fontSize: '10px',
-                  textAlign: 'center',
-                  lineHeight: '1.6',
-                  width: '100%'
-                }}>
-                  <div style={{ marginBottom: '8px', fontSize: '11px', textDecoration: 'underline' }}>
+                <div className="selection-message selection-message-enemy">
+                  <div className="selection-message-title">
                     CHOOSE AN ENEMY
                   </div>
-                  <div style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '9px' }}>
+                  <div className="selection-message-subtitle">
                     Click on an enemy to target with your selected skill
                   </div>
                 </div>
               )}
               
               {selectionStep === 'ally' && selectedSkillId !== null && (
-                <div style={{
-                  color: '#51cf66',
-                  fontFamily: "'Press Start 2P', monospace",
-                  fontSize: '10px',
-                  textAlign: 'center',
-                  lineHeight: '1.6',
-                  width: '100%'
-                }}>
-                  <div style={{ marginBottom: '8px', fontSize: '11px', textDecoration: 'underline' }}>
+                <div className="selection-message selection-message-ally">
+                  <div className="selection-message-title">
                     CHOOSE AN ALLY
                   </div>
-                  <div style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '9px' }}>
+                  <div className="selection-message-subtitle">
                     Click on an ally to target with your selected skill
                   </div>
                 </div>
@@ -1014,16 +861,7 @@ export default function BattleScreen() {
               
               {/* Skills buttons - shown when selecting skill, now inside the box */}
               {selectionStep === 'skill' && selectedHeroSkills.length > 0 && (
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '10px',
-                  flex: 1,
-                  overflowY: 'auto',
-                  opacity: 0,
-                  transform: 'translateX(-20px)',
-                  animation: 'fadeInSlideRight 0.3s ease-out 0.2s forwards'
-                }}>
+                <div className="skills-buttons-list">
                 {selectedHeroSkills.map((skillId) => {
                   const skill = getSkillById(skillId)
                   if (!skill) return null
@@ -1034,36 +872,12 @@ export default function BattleScreen() {
                       key={skillId}
                       onClick={() => !loading && handleSkillClick(skillId)}
                       disabled={loading || selectionStep !== 'skill'}
-                      style={{
-                        cursor: loading || selectionStep !== 'skill' ? 'not-allowed' : 'pointer',
-                        opacity: loading ? 0.5 : 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'flex-start',
-                        padding: '12px 20px',
-                        width: '100%',
-                        background: isSelected ? 'rgba(78, 205, 196, 0.2)' : 'rgba(44, 62, 80, 0.9)',
-                        border: isSelected ? '2px solid #4ecdc4' : '2px solid rgba(255, 255, 255, 0.3)',
-                        borderRadius: '8px',
-                        boxShadow: isSelected ? '0 0 15px rgba(78, 205, 196, 0.7)' : '0 3px 8px rgba(0,0,0,0.5)',
-                        transition: 'all 0.2s ease-in-out'
-                      }}
+                      className={`skill-button ${isSelected ? 'skill-button-selected' : ''}`}
                     >
-                      <div style={{ 
-                        color: '#fff', 
-                        marginBottom: '4px',
-                        fontFamily: "'Press Start 2P', monospace",
-                        fontSize: '10px',
-                        lineHeight: '1.4'
-                      }}>
+                      <div className="skill-name">
                         {skill.name}
                       </div>
-                      <div style={{ 
-                        color: 'rgba(255, 255, 255, 0.7)', 
-                        fontSize: '8px',
-                        fontFamily: "'Press Start 2P', monospace",
-                        lineHeight: '1.4'
-                      }}>
+                      <div className="skill-description">
                         {skill.description}
                       </div>
                     </button>
@@ -1115,35 +929,5 @@ export default function BattleScreen() {
         )}
       </div>
     </div>
-    //   {/* Skill buttons - show dynamically according to selected hero */}
-    //   {battleState.phase === 'SELECT_SKILL' && battleState.selectedHero !== null && selectedHeroSkills.length > 0 && (
-    //     <div className="skills-buttons-container">
-    //       {selectedHeroSkills.map((skillId) => {
-    //         const skill = getSkillById(skillId)
-    //         if (!skill) return null
-            
-    //         // Compare as numbers to work with enum and number
-    //         const selectedSkillNum = battleState.selectedSkill !== null 
-    //           ? (typeof battleState.selectedSkill === 'number' ? battleState.selectedSkill : Number(battleState.selectedSkill))
-    //           : null
-    //         const isSelected = selectedSkillNum === skillId
-            
-    //         return (
-    //           <button 
-    //             key={skillId}
-    //             className={`skills-buttons ${isSelected ? 'highlighted' : ''}`}
-    //             onClick={() => {
-    //               console.log(`🎯 Skill selected: ${skill.name} (ID: ${skillId})`)
-    //               selectSkill(skillId)
-    //             }}
-    //           >
-    //             <span className="skill-icon">{getSkillIcon(skillId)}</span>
-    //             <span className="skill-text">{skill.name}.</span>
-    //           </button>
-    //         )
-    //       })}
-    //     </div>
-    //   )}
-    // </div>
   )
 }

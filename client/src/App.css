@@ -44,6 +44,17 @@
   justify-content: center;
 }
 
+.app-container:has(.levels-screen) {
+  background-image: url('/backgrounds/levelsbg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .error-message {
   background: #fef2f2;
   border: 1px solid #fecaca;
@@ -89,9 +100,28 @@
 
 .levels-title {
   font-family: 'Press Start 2P', monospace;
-  letter-spacing: 2px;
+  font-size: clamp(18px, 2.8vw, 30px);
+  letter-spacing: 3px;
   color: #fff;
-  text-shadow: 0 2px 0 #000, 0 0 12px rgba(0,0,0,0.6);
+  text-shadow: 
+    0 0 15px rgba(255, 255, 255, 0.8),
+    0 0 30px rgba(255, 255, 255, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.8),
+    2px 2px 2px rgba(0, 0, 0, 0.9);
+  margin-bottom: 3vh;
+  text-align: center;
+  animation: pulse-title 2s ease-in-out infinite;
+}
+
+@keyframes pulse-title {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.05);
+  }
 }
 
 .levels-grid {
@@ -132,6 +162,57 @@
   top: 8px; 
   right: 12px; 
   font-size: 22px; 
+}
+
+.level-difficulty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(16px, 2.5vw, 24px);
+  letter-spacing: 2px;
+  z-index: 1;
+  pointer-events: none;
+  animation: pulse-difficulty 2s ease-in-out infinite;
+}
+
+.level-difficulty-easy {
+  color: #4ade80;
+  text-shadow: 
+    0 0 15px rgba(74, 222, 128, 0.9),
+    0 0 25px rgba(74, 222, 128, 0.6),
+    0 2px 4px rgba(0, 0, 0, 0.8),
+    2px 2px 2px rgba(0, 0, 0, 0.9);
+}
+
+.level-difficulty-medium {
+  color: #fbbf24;
+  text-shadow: 
+    0 0 15px rgba(251, 191, 36, 0.9),
+    0 0 25px rgba(251, 191, 36, 0.6),
+    0 2px 4px rgba(0, 0, 0, 0.8),
+    2px 2px 2px rgba(0, 0, 0, 0.9);
+}
+
+.level-difficulty-hard {
+  color: #ef4444;
+  text-shadow: 
+    0 0 15px rgba(239, 68, 68, 0.9),
+    0 0 25px rgba(239, 68, 68, 0.6),
+    0 2px 4px rgba(0, 0, 0, 0.8),
+    2px 2px 2px rgba(0, 0, 0, 0.9);
+}
+
+@keyframes pulse-difficulty {
+  0%, 100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
 }
 
 .levels-hint { 
@@ -247,26 +328,46 @@
 	justify-content: flex-start;
 	gap: 15px;
 	pointer-events: none;
-	overflow: hidden;
 	min-width: 0;
 }
 
 .monsters-status-list {
 	display: flex;
 	justify-content: flex-end;
-	flex: 0.8;
+	flex: 1;
+	padding-left: 3%;
 }
 
 .div-espacio-monsters {
-	flex: 0.2;
+	flex: 0.15;
 }
 
 .div-espacio-info {
-	flex: 0.2;
+	flex: 0.5;
+	margin-left: 20px;
+	margin-top: 20px;
+	position: relative;
+	width: 100%;
+	height: 95%;
+	display: flex;
+	flex-direction: column;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding-right: 15px;
+	min-width: 0;
 }
 
 .div-espacio-skills {
 	flex: 0.3;
+	margin-left: 20px;
+	margin-top: 20px;
+	position: relative;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	padding-right: 15px;
+	min-width: 0;
 }
 
 .heroes-status-list {
@@ -392,74 +493,270 @@ clip-path: inherit;
 	transform: translateY(-1px);
 }
 
-.skill-icon {
-	width: 48px;
-	height: 48px;
-	border-radius: 10px;
-	border: 3px solid rgba(255,255,255,0.9);
-	box-shadow: 0 3px 8px rgba(0,0,0,0.5);
-	image-rendering: pixelated;
-	background: rgba(0,0,0,0.28);
-}
-
-.skills-buttons-container {
-	position:fixed;
-	right: 20px;
-	top:80%;
-	transform: translateY(-50%);
+/* ============================================
+   Character Info Box Styles
+   ============================================ */
+.character-info-box {
+	background: rgba(0, 0, 0, 0.85);
+	border: 2px solid rgba(255, 255, 255, 0.3);
+	border-radius: 8px;
+	padding: 0.5em;
+	color: #fff;
+	font-family: 'Press Start 2P', monospace;
+	font-size: clamp(6px, 1.2vh, 8px);
+	line-height: 1.2;
+	width: 100%;
+	max-width: 100%;
+	height: 100%;
+	opacity: 0;
+	transform: translateY(-10px);
+	animation: fadeInSlideDown 0.3s ease-out forwards;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
-	z-index: 100;
+	box-sizing: border-box;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+	overflow: hidden;
 }
 
-.skills-buttons {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	padding: 12px 20px;
-	background-color: #2C3E50;
-	color: white;
-	font-family: sans-serif;
-	font-size: 1.1rem;
-	border: 2px solid transparent;
+.character-info-box-empty {
+	background: rgba(0, 0, 0, 0.6);
+	border: 1px solid rgba(255, 255, 255, 0.2);
 	border-radius: 8px;
-	cursor: pointer;
-	transition: all 0.2s ease-in-out;
-	text-align: left;
-	width: 250px;
-	box-shadow: none;
-	margin: 0;
-}
-
-.skills-buttons .skill-icon {
-	width: 24px;
-	height: 24px;
-	font-size: 24px;
+	color: rgba(255, 255, 255, 0.6);
+	font-family: 'Press Start 2P', monospace;
+	font-size: 8px;
+	text-align: center;
+	padding: 15px 15px;
+	line-height: 1.4;
+	width: 100%;
+	max-width: 100%;
+	height: 100%;
 	display: flex;
-	align-items: center;
+	flex-direction: column;
 	justify-content: center;
+	align-items: center;
+	opacity: 0;
+	animation: fadeIn 0.3s ease-out forwards;
+	box-sizing: border-box;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+
+.character-info-box-empty > div:first-child {
+	margin-bottom: 6px;
+}
+
+.character-info-box-empty > div:last-child {
+	font-size: 7px;
+	line-height: 1.3;
+}
+
+.character-info-header {
+	flex-shrink: 0;
+	margin-bottom: 0.3em;
+	font-size: 1.1em;
+	text-align: center;
+	text-decoration: underline;
+}
+
+.character-info-header.monster {
+	color: #ff6b6b;
+}
+
+.character-info-header.hero {
+	color: #4ecdc4;
+}
+
+.character-stats-list {
+	flex-shrink: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.2em;
+	margin-bottom: 0.3em;
+}
+
+.character-stat-row {
+	display: flex;
+	justify-content: space-between;
+}
+
+.character-skill-list {
+	flex: 1;
+	min-height: 0;
+	border-top: 1px solid rgba(255, 255, 255, 0.2);
+	padding-top: 0.3em;
+	margin-top: 0.3em;
+	opacity: 0;
+	animation: fadeIn 0.4s ease-out 0.2s forwards;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.character-skill-list-title {
+	flex-shrink: 0;
+	font-size: 1em;
+	margin-bottom: 0.2em;
+}
+
+.character-skill-list-title.monster {
+	color: #ff6b6b;
+}
+
+.character-skill-list-title.hero {
+	color: #4ecdc4;
+}
+
+.character-skills-container {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.15em;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.character-skill-item {
+	font-size: 0.9em;
+	padding: 0.2em 0.3em;
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: 4px;
+	flex-shrink: 0;
+}
+
+.character-skill-item-name {
+	color: #fff;
+	margin-bottom: 0.1em;
+	text-align: left;
+}
+
+.character-skill-item-description {
+	color: rgba(255, 255, 255, 0.7);
+	font-size: 0.75em;
+	line-height: 1.1;
+	text-align: left;
+}
+
+/* ============================================
+   Skills Info Box Styles
+   ============================================ */
+.skills-info-box {
+	background: rgba(0, 0, 0, 0.85);
+	border: 2px solid rgba(78, 205, 196, 0.5);
+	border-radius: 8px;
+	padding: 1em 0.75em;
+	color: #fff;
+	font-family: 'Press Start 2P', monospace;
+	font-size: clamp(5px, 1.3vh, 9px);
+	line-height: 1.3;
+	width: 100%;
+	min-height: 100%;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+	display: flex;
+	flex-direction: column;
+	gap: 1em;
+	justify-content: center;
+	opacity: 0;
+	animation: fadeIn 0.3s ease-out forwards;
+	box-sizing: border-box;
+}
+
+.skills-info-box.has-skills {
+	justify-content: flex-start;
+	padding-top: 1.2em;
+}
+
+.selection-message {
+	font-family: 'Press Start 2P', monospace;
+	font-size: 8px;
+	text-align: center;
+	line-height: 1.3;
+	width: 100%;
+}
+
+.selection-message-hero {
+	color: #ffff00;
+	font-family: 'Press Start 2P', monospace;
+}
+
+.selection-message-skill {
+	color: #4ecdc4;
+	flex-shrink: 0;
+}
+
+.selection-message-enemy {
+	color: #ff6b6b;
+}
+
+.selection-message-ally {
+	color: #51cf66;
+}
+
+.selection-message-title {
+	margin-bottom: 0.5em;
+	font-size: 1.1em;
+	text-decoration: underline;
+}
+
+.selection-message-subtitle {
+	color: rgba(255, 255, 255, 0.8);
+	font-size: 0.85em;
+}
+
+.skills-buttons-list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.8em;
+	flex: 1;
+	overflow-y: auto;
+	opacity: 0;
+	transform: translateX(-20px);
+	animation: fadeInSlideRight 0.3s ease-out 0.2s forwards;
+	padding-top: 0.5em;
+}
+
+.skill-button {
+	cursor: pointer;
+	opacity: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	padding: 0.6em 0.8em;
+	width: 100%;
+	background: rgba(255, 255, 255, 0.1);
 	border: none;
+	border-radius: 4px;
 	box-shadow: none;
-	background: transparent;
-	border-radius: 0;
-	image-rendering: auto;
+	transition: all 0.2s ease-in-out;
+	font-size: 1em;
 }
 
-.skills-buttons .skill-text {
-	flex-grow: 1;
+.skill-button:disabled {
+	cursor: not-allowed;
+	opacity: 0.5;
 }
 
-.skills-buttons.highlighted,
-.skills-buttons:hover {
-	border-color: white;
-	box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
-	background-color: #34495E;
+.skill-button-selected {
+	background: rgba(78, 205, 196, 0.2);
+	border: 1px solid #4ecdc4;
+	box-shadow: none;
 }
 
-.skills-buttons.highlighted .skill-icon,
-.skills-buttons:hover .skill-icon {
-	filter: none;
+.skill-name {
+	color: #fff;
+	margin-bottom: 0.4em;
+	text-align: left;
+	font-size: 1em;
+}
+
+.skill-description {
+	color: rgba(255, 255, 255, 0.7);
+	font-size: 0.85em;
+	line-height: 1.3;
+	text-align: left;
 }
 
 /* ============================================
@@ -475,6 +772,37 @@ clip-path: inherit;
   40%, 43% { transform: translate3d(0,-30px,0); }
   70% { transform: translate3d(0,-15px,0); }
   90% { transform: translate3d(0,-4px,0); }
+}
+
+@keyframes fadeInSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInSlideRight {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* Glow effect for selectable characters - base glow */
@@ -549,7 +877,7 @@ clip-path: inherit;
 	font-family: 'Press Start 2P', monospace;
 	font-size: 10px;
 	text-align: center;
-	margin-top: 5%;
+	margin-top: 8%;
 	text-shadow: 
 		0 0 10px rgba(255, 255, 0, 0.9),
 		0 0 20px rgba(255, 255, 100, 0.7),
@@ -599,6 +927,11 @@ clip-path: inherit;
   .app-container:has(.pantalla-inicio-background) .pantalla-inicio {
     margin: 1rem;
     max-width: calc(100% - 2rem);
+  }
+
+  .app-container:has(.levels-screen) {
+    background-image: url('/backgrounds/levelsbg.png');
+    background-attachment: scroll;
   }
 }
 
