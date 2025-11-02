@@ -10,7 +10,7 @@ const TOTAL_LEVELS: LevelId[] = [1, 2, 3]
 function getInitialUnlocked(): LevelId {
   const saved = Number(localStorage.getItem('destiny_unlocked_level'))
   if (saved === 2 || saved === 3) return saved as LevelId
-  return 1
+  return 3
 }
 
 export default function LevelsScreen() {
@@ -59,6 +59,7 @@ export default function LevelsScreen() {
 
   const handleSelect = async (level: LevelId) => {
     let result = await startBattle(level);
+    await new Promise(resolve => setTimeout(resolve, 1000));
     navigate(`/battle/${BigInt(result?.battle_id as string)}`)
   }
 
@@ -85,13 +86,15 @@ export default function LevelsScreen() {
       <div className="levels-grid">
         {TOTAL_LEVELS.map((lv) => {
           const locked = lv > unlocked
+          const cardImage = `/backgrounds/card${lv}.${lv === 3 ? 'webp' : 'png'}`
           return (
             <button
               key={lv}
-              className={`level-card ${locked ? 'locked' : 'unlocked'}`}
+              className={`level-card level-card-${lv} ${locked ? 'locked' : 'unlocked'}`}
               onClick={() => handleSelect(lv)}
               aria-label={`Level ${lv}${locked ? ' (locked)' : ''}`}
               disabled={locked}
+              style={{ backgroundImage: `url(${cardImage})` }}
             >
               {locked && <div className="level-lock" aria-hidden>🔒</div>}
             </button>

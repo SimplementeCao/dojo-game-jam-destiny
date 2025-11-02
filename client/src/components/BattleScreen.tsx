@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo } from 'react'
+import { useEffect, useRef, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useBattleLogic } from '../hooks/useBattleLogic'
 import { HeroId, EnemyId } from '../types/battle'
@@ -6,10 +6,122 @@ import '../App.css'
 import { levelsConfig, type LevelId } from '../config/levelsConfig'
 import { getSkillsIdsByHeroId, getSkillById } from '../utils/battleUtils'
 import { useBattleData } from '../hooks/useBattleData'
+import { dojoConfig } from '../dojo/dojoConfig'
 
 export default function BattleScreen() {
   const { battleId } = useParams()
+  const [heroesStatus, setHeroesStatus] = useState<any[]>([])
+  const [monstersStatus, setMonstersStatus] = useState<any[]>([])
   const { battle } = useBattleData(Number(battleId || 0))
+
+  // Cargar characterStatus para héroes y monstruos
+  useEffect(() => {
+    if (!battle || !battle.id) {
+      setHeroesStatus([])
+      setMonstersStatus([])
+      return
+    }
+
+      const loadAllStatuses = async () => {
+      console.log('[BattleScreen] 🚀 Starting loadAllStatuses')
+      console.log('[BattleScreen] Battle:', battle)
+      
+      const loadCharacterStatus = async (characterId: number): Promise<any | null> => {
+        try {
+          console.log(`[BattleScreen] 📡 Loading character ${characterId} for battle ${battle.id}`)
+          const response = await fetch(`${dojoConfig.toriiUrl}/graphql`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              query: `
+                query GetCharacterStatus($battleId: Int!, $characterId: Int!) {
+                  destiny4CharacterStatusModels(
+                    where: { battle_id: $battleId, character_id: $characterId }
+                  ) {
+                    edges {
+                      node {
+                        battle_id
+                        character_id
+                        current_hp
+                        max_hp
+                        attack
+                        defense
+                        critical_chance
+                        evasion
+                      }
+                    }
+                  }
+                }
+              `,
+              variables: { battleId: battle.id, characterId: Number(characterId) }
+            })
+          })
+          
+          if (!response.ok) {
+            console.error(`[BattleScreen] ❌ HTTP error ${response.status} for character ${characterId}`)
+            throw new Error(`HTTP error! status: ${response.status}`)
+          }
+          
+          const result = await response.json()
+          console.log(`[BattleScreen] 📦 Full response for character ${characterId}:`, JSON.stringify(result, null, 2))
+          
+          if (result.errors) {
+            console.error(`[BattleScreen] ❌ GraphQL errors for character ${characterId}:`, result.errors)
+            return null
+          }
+          
+          if (result.data?.destiny4CharacterStatusModels?.edges?.length > 0) {
+            const node = result.data.destiny4CharacterStatusModels.edges[0].node
+            console.log(`[BattleScreen] ✅ Found data for character ${characterId}:`, node)
+            return node
+          }
+          
+          console.warn(`[BattleScreen] ⚠️ No edges found for character ${characterId}`)
+          console.warn(`[BattleScreen] Data structure:`, result.data)
+          return null
+        } catch (error) {
+          console.error(`[BattleScreen] ❌ Exception loading character ${characterId}:`, error)
+          return null
+        }
+      }
+
+      // Cargar héroes y monstruos en paralelo
+      const heroIds = battle.heroes_ids || []
+      const monsterIds = battle.monsters_ids || []
+      
+      console.log(`[BattleScreen] 📊 Preparing to load ${heroIds.length} heroes and ${monsterIds.length} monsters`)
+      console.log('[BattleScreen] Hero IDs:', heroIds)
+      console.log('[BattleScreen] Monster IDs:', monsterIds)
+      
+      const heroPromises = heroIds.map((heroId: any) => 
+        loadCharacterStatus(Number(heroId))
+      )
+      const monsterPromises = monsterIds.map((monsterId: any) => 
+        loadCharacterStatus(Number(monsterId))
+      )
+
+      console.log('[BattleScreen] ⏳ Waiting for all promises to resolve...')
+      const [heroResults, monsterResults] = await Promise.all([
+        Promise.all(heroPromises),
+        Promise.all(monsterPromises)
+      ])
+
+      console.log('[BattleScreen] 📊 Hero results:', heroResults)
+      console.log('[BattleScreen] 📊 Monster results:', monsterResults)
+
+      const validHeroes = heroResults.filter((status: any) => status !== null)
+      const validMonsters = monsterResults.filter((status: any) => status !== null)
+      
+      console.log(`[BattleScreen] ✅ Filtered: ${validHeroes.length} heroes, ${validMonsters.length} monsters`)
+      console.log('[BattleScreen] ✅ Valid heroes:', validHeroes)
+      console.log('[BattleScreen] ✅ Valid monsters:', validMonsters)
+
+      setHeroesStatus(validHeroes)
+      setMonstersStatus(validMonsters)
+    }
+
+    loadAllStatuses()
+  }, [battle?.id])
 
   const {
     battleState,
@@ -94,6 +206,9 @@ export default function BattleScreen() {
 
   useEffect(() => {
     console.log('🔍 Battle data:', battle)
+    console.log('🔍 Heroes status:', heroesStatus)
+    console.log('🔍 Monsters status:', monstersStatus)
+
     const allCompleted = heroActions.every((a) => a.completed)
     const thirdHeroCompleted = heroActions.find((a) => a.heroId === HeroId.HERO)?.completed
 

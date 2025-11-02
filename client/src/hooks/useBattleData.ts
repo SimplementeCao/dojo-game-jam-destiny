@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { useAccount } from "@starknet-react/core";
 import { useDojoSDK } from "@dojoengine/sdk/react";
-import type { Battle, Character, CharacterStatus, CurrentBattle, Progress } from "../dojo/models.gen";
+import type { Battle, Character, CharacterStatus } from "../dojo/generated/typescript/models.gen";
 import { dojoConfig } from '../dojo/dojoConfig'
 
 // Helper function to convert BigNumberish to number
@@ -13,8 +12,6 @@ const toNumber = (value: any): number => {
 };
 
 export const useBattleData = (battleId?: number) => {
-  console.log("useBattleData called with battleId:", battleId);
-  const { account } = useAccount();
   const { client } = useDojoSDK();
   
   const [battle, setBattle] = useState<Battle | null>(null);
@@ -22,27 +19,20 @@ export const useBattleData = (battleId?: number) => {
   const [error, setError] = useState<string | null>(null);
 
   const loadBattleData = async () => {
-    console.log("=== loadBattleData called ===");
-    console.log("battleId:", battleId);
-    console.log("account?.address:", account?.address);
-    console.log("client:", !!client);
     
     if (!battleId || !client) {
-      console.log("Early return from loadGameData - missing requirements");
+      console.log('[useBattleData] ⚠️ Missing battleId or client:', { battleId, hasClient: !!client });
       return;
     }
 
+    console.log(`[useBattleData] 🔄 Loading battle data for ID: ${battleId}`);
     setLoading(true);
     setError(null);
 
     try {
-      console.log("Querying Torii GraphQL at:", `${dojoConfig.toriiUrl}/graphql`);
-      console.log("Query variables:", { battleId });
-      
-      // GraphQL query to get battle data - Torii schema format
       const battleQuery = `
         query GetBattle($battleId: Int!) {
-          destiny2BattleModels(where: { id: $battleId }) {
+          destiny4BattleModels(where: { id: $battleId }) {
             edges {
               node {
                 id
@@ -56,11 +46,9 @@ export const useBattleData = (battleId?: number) => {
           }
         }
       `;
-
-      console.log("Querying Torii GraphQL at:", `${dojoConfig.toriiUrl}/graphql`);
-      console.log("Query variables:", { battleId });
       
-      // Execute both queries in parallel
+      console.log('[useBattleData] 📡 Sending GraphQL query:', { battleId, query: battleQuery });
+      
       const [battleResponse] = await Promise.all([
         fetch(`${dojoConfig.toriiUrl}/graphql`, {
           method: 'POST',
@@ -74,24 +62,26 @@ export const useBattleData = (battleId?: number) => {
         }),
       ]);
       
-      console.log("=== GraphQL requests completed ===");
+      if (!battleResponse.ok) {
+        throw new Error(`HTTP error! status: ${battleResponse.status}`);
+      }
       
       const [battleResult] = await Promise.all([
         battleResponse.json()
       ]);
-
-      console.log("Torii GraphQL battle response:", battleResult);
+      
+      console.log('[useBattleData] 📦 GraphQL response:', JSON.stringify(battleResult, null, 2));
       
       let battleData: Battle | null = null;
-      console.log("Battle result:", battleResult);
       
-      // Process battle data
-      if (battleResult.data.destiny2BattleModels.edges[0].node) {
-        const battleNode = battleResult.data.destiny2BattleModels.edges[0].node;
+      if (battleResult.errors) {
+        console.error('[useBattleData] GraphQL errors:', battleResult.errors);
+        throw new Error(`GraphQL battle error: ${battleResult.errors[0]?.message || 'Unknown error'}`);
+      }
+      
+      if (battleResult.data?.destiny4BattleModels?.edges?.length > 0) {
+        const battleNode = battleResult.data.destiny4BattleModels.edges[0].node;
         
-        console.log("Battle node from GraphQL:", battleNode);
-        
-        // For now, let's use a simpler approach for game state to avoid CairoCustomEnum issues
         battleData = {
           id: toNumber(battleNode.id),
           level: toNumber(battleNode.level),
@@ -101,18 +91,14 @@ export const useBattleData = (battleId?: number) => {
           is_finished: battleNode.is_finished,
         } as Battle;
         
-        console.log("Successfully loaded battle data from Torii:", battleData);
-      } else if (battleResult.errors) {
-        console.error("GraphQL battle errors:", battleResult.errors);
-        throw new Error(`GraphQL battle error: ${battleResult.errors[0]?.message || 'Unknown error'}`);
+        console.log('[useBattleData] ✅ Battle loaded:', battleData);
       } else {
-        console.log("No battle data found");
+        console.warn(`[useBattleData] ⚠️ No battle found for ID: ${battleId}`);
+        console.warn('[useBattleData] Response data:', battleResult.data);
         battleData = null;
       }
-
-      setBattle(battleData);
-      console.log("Data set successfully!");
       
+      setBattle(battleData);
       } catch (err) {
         console.error("Error loading battle data:", err);
         setError(err instanceof Error ? err.message : "Error loading battle data");
@@ -121,7 +107,6 @@ export const useBattleData = (battleId?: number) => {
       }
     };
 
-  // Removed automatic reload - data will only be loaded when explicitly called (game start or F5)
   useEffect(() => {
     loadBattleData();
   }, [battleId]);
@@ -136,7 +121,6 @@ export const useBattleData = (battleId?: number) => {
 
 export const useCharacterData = (characterId?: number) => {
   const { client } = useDojoSDK();
-  const { account } = useAccount();
   const [character, setCharacter] = useState<Character | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -147,20 +131,13 @@ export const useCharacterData = (characterId?: number) => {
       return;
     }
 
-    console.log("All requirements met, proceeding with loadCharacterData");
     setLoading(true);
     setError(null);
     
     try {
-      console.log("=== loadCharacterData called ===");
-      console.log("characterId:", characterId);
-      console.log("account?.address:", account?.address);
-      console.log("client:", !!client);
-      
-      // GraphQL query to get character data - using correct schema
       const characterQuery = `
         query GetCharacter($characterId: Int!) {
-          destiny2CharacterModels(where: { id: $characterId }) {
+          destiny4CharacterModels(where: { id: $characterId }) {
             edges {
               node {
                 id
@@ -177,9 +154,6 @@ export const useCharacterData = (characterId?: number) => {
         }
       `;
 
-      console.log("Querying Torii GraphQL at:", `${dojoConfig.toriiUrl}/graphql`);
-      console.log("Query variables:", { characterId });
-      
       const response = await fetch(`${dojoConfig.toriiUrl}/graphql`, {
         method: 'POST',
         headers: {
@@ -194,15 +168,11 @@ export const useCharacterData = (characterId?: number) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
       const result = await response.json();
-      console.log("Torii GraphQL response:", result);
 
       let characterData: Character | null = null;
-      if (result.data && result.data.model) {
+      if (result.data.destiny4CharacterModels.edges[0].node) {
         const characterNode = result.data.model;
-        
-        console.log("Character node from GraphQL:", characterNode);
           
           characterData = {
             id: toNumber(characterNode.id),
@@ -215,6 +185,7 @@ export const useCharacterData = (characterId?: number) => {
             evasion: toNumber(characterNode.evasion),
           } as Character;
           setCharacter(characterData);
+
       } else if (result.errors) {
         console.error("GraphQL errors:", result.errors);
         throw new Error(`GraphQL error: ${result.errors[0]?.message || 'Unknown error'}`);
@@ -238,38 +209,34 @@ export const useCharacterData = (characterId?: number) => {
   };
 }; 
 
-
-export const useCharacterStatusData = (battleId?: number, characterIndex?: number) => {
+export const useCharacterStatusData = (battleId?: number, characterId?: number) => {
   const { client } = useDojoSDK();
   const [characterStatus, setCharacterStatus] = useState<CharacterStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadCharacterStatusData = async () => {
-    if (!battleId || !characterIndex || !client) {
-      console.log("Early return from loadCharacterStatusData - missing requirements");
+    if (!battleId || !characterId || !client) {
       return;
     }
-
-    console.log("All requirements met, proceeding with loadCharacterStatusData");
+    
     setLoading(true);
     setError(null);
     
+    console.log("[useCharacterStatusData] BattleId:", battleId, "characterId:", characterId);
     try {
-      console.log("=== loadCharacterStatusData called ===");
-      console.log("battleId:", battleId);
-      console.log("characterIndex:", characterIndex);
-      console.log("client:", !!client);
-      
-      // GraphQL query to get character status data - using correct schema
       const characterStatusQuery = `
-        query GetCharacterStatus($battleId: Int!, $characterIndex: Int!) {
-          destiny2CharacterStatusModels(where: { battle_id: $battleId, character_index: $characterIndex }) {
+        query GetCharacterStatus($battleId: Int!, $characterId: Int!) {
+          destiny4CharacterStatusModels(
+            where: { 
+              battle_id: $battleId,
+              character_id: $characterId
+            }
+          ) {
             edges {
               node {
-                id
-                name
-                skills
+                battle_id
+                character_id
                 health
                 attack
                 defense
@@ -281,9 +248,6 @@ export const useCharacterStatusData = (battleId?: number, characterIndex?: numbe
         }
       `;
 
-      console.log("Querying Torii GraphQL at:", `${dojoConfig.toriiUrl}/graphql`);
-      console.log("Query variables:", { battleId, characterIndex });
-      
       const response = await fetch(`${dojoConfig.toriiUrl}/graphql`, {
         method: 'POST',
         headers: {
@@ -291,7 +255,7 @@ export const useCharacterStatusData = (battleId?: number, characterIndex?: numbe
         },
         body: JSON.stringify({
           query: characterStatusQuery,
-          variables: { battleId, characterIndex }
+           variables: { battleId, characterId }
         }),
       });
 
@@ -300,40 +264,44 @@ export const useCharacterStatusData = (battleId?: number, characterIndex?: numbe
       }
 
       const result = await response.json();
-      console.log("Torii GraphQL response:", result);
-
+      console.log("[CharacterStatusData] RESULT RESULT:", result);
+      
       let characterStatusData: CharacterStatus | null = null;
-      if (result.data && result.data.model) {
-        const characterStatusNode = result.data.model;
+      if (result.data?.destiny4CharacterStatusModels?.edges?.length > 0) {
+        const characterStatusNode = result.data.destiny4CharacterStatusModels.edges[0].node;
         
-        console.log("Character status node from GraphQL:", characterStatusNode);
-          
-          characterStatusData = {
-            id: toNumber(characterStatusNode.id),
-            battle_id: toNumber(characterStatusNode.battle_id),
-            character_index: toNumber(characterStatusNode.character_index),
-            character_id: toNumber(characterStatusNode.character_id),
-            health: toNumber(characterStatusNode.health),
-            attack: toNumber(characterStatusNode.attack),
-            defense: toNumber(characterStatusNode.defense),
-            critical_chance: toNumber(characterStatusNode.critical_chance),
-            evasion: toNumber(characterStatusNode.evasion),
-          } as CharacterStatus;
-          setCharacterStatus(characterStatusData);
+        characterStatusData = {
+          battle_id: toNumber(characterStatusNode.battle_id),
+          character_id: toNumber(characterStatusNode.character_id),
+          current_hp: toNumber(characterStatusNode.current_hp),
+          max_hp: toNumber(characterStatusNode.max_hp),
+          attack: toNumber(characterStatusNode.attack),
+          defense: toNumber(characterStatusNode.defense),
+          critical_chance: toNumber(characterStatusNode.critical_chance),
+          evasion: toNumber(characterStatusNode.evasion),
+        } as CharacterStatus;
+        setCharacterStatus(characterStatusData);
+        console.log("[CharacterStatusData] loaded:", characterStatusData);
       } else if (result.errors) {
         console.error("GraphQL errors:", result.errors);
         throw new Error(`GraphQL error: ${result.errors[0]?.message || 'Unknown error'}`);
+      } else {
+        characterStatusData = null;
+        setCharacterStatus(null);
       }
+    } catch (err) {
+      console.error("Error loading character status data:", err);
+      setError(err instanceof Error ? err.message : "Error loading character status data");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (battleId && characterIndex) {
+    if (battleId && characterId !== undefined) {
       loadCharacterStatusData();
     }
-  }, [battleId, characterIndex]);
+  }, [battleId, characterId]);
 
   return {
     characterStatus,

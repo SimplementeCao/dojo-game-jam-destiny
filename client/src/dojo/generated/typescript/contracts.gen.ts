@@ -14,7 +14,7 @@ export function setupWorld(provider: DojoProvider) {
 
 	const actions_getHeroSkills = async (heroId: BigNumberish) => {
 		try {
-			return await provider.call("destiny2", build_actions_getHeroSkills_calldata(heroId));
+			return await provider.call("destiny4", build_actions_getHeroSkills_calldata(heroId));
 		} catch (error) {
 			console.error(error);
 			throw error;
@@ -31,7 +31,7 @@ export function setupWorld(provider: DojoProvider) {
 
 	const actions_getMonsterSkills = async (monsterId: BigNumberish) => {
 		try {
-			return await provider.call("destiny2", build_actions_getMonsterSkills_calldata(monsterId));
+			return await provider.call("destiny4", build_actions_getMonsterSkills_calldata(monsterId));
 		} catch (error) {
 			console.error(error);
 			throw error;
@@ -48,28 +48,7 @@ export function setupWorld(provider: DojoProvider) {
 
 	const actions_getPlayerBattle = async (player: string) => {
 		try {
-			return await provider.call("destiny2", build_actions_getPlayerBattle_calldata(player));
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_actions_initialize_calldata = (): DojoCall => {
-		return {
-			contractName: "actions",
-			entrypoint: "initialize",
-			calldata: [],
-		};
-	};
-
-	const actions_initialize = async (snAccount: Account | AccountInterface) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_actions_initialize_calldata(),
-				"destiny2",
-			);
+			return await provider.call("destiny4", build_actions_getPlayerBattle_calldata(player));
 		} catch (error) {
 			console.error(error);
 			throw error;
@@ -89,7 +68,7 @@ export function setupWorld(provider: DojoProvider) {
 			return await provider.execute(
 				snAccount,
 				build_actions_play_calldata(actions),
-				"destiny2",
+				"destiny4",
 			);
 		} catch (error) {
 			console.error(error);
@@ -110,7 +89,7 @@ export function setupWorld(provider: DojoProvider) {
 			return await provider.execute(
 				snAccount,
 				build_actions_startBattle_calldata(level),
-				"destiny2",
+				"destiny4",
 			);
 		} catch (error) {
 			console.error(error);
@@ -128,8 +107,6 @@ export function setupWorld(provider: DojoProvider) {
 			buildGetMonsterSkillsCalldata: build_actions_getMonsterSkills_calldata,
 			getPlayerBattle: actions_getPlayerBattle,
 			buildGetPlayerBattleCalldata: build_actions_getPlayerBattle_calldata,
-			initialize: actions_initialize,
-			buildInitializeCalldata: build_actions_initialize_calldata,
 			play: actions_play,
 			buildPlayCalldata: build_actions_play_calldata,
 			startBattle: actions_startBattle,

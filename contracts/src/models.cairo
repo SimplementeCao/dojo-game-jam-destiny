@@ -44,7 +44,8 @@ pub struct CharacterStatus {
     pub battle_id: u32,
     #[key]
     pub character_id: u32,
-    pub health: u32,
+    pub current_hp: u32,
+    pub max_hp: u32,
     pub attack: u32,
     pub defense: u32,
     pub critical_chance: u32,

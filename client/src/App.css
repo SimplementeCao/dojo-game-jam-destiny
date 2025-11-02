@@ -24,15 +24,13 @@
   padding: 1rem;
 }
 
-/* Fullscreen sin padding para el escenario */
 .app-container:has(.escenario-root) {
 	padding: 0;
 	background: #000;
 }
 
-/* Background fullscreen para pantalla inicio */
 .app-container:has(.pantalla-inicio-background) {
-  background-image: url('/backgrounds/fondoInicio.png');
+  background-image: url('/backgrounds/initBg.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -41,10 +39,6 @@
   align-items: center;
   justify-content: center;
 }
-
-/* pantalla-juego-background - NO SE USA (componente PantallaJuego eliminado) */
-
-/* Connection Header - NO SE USA (se eliminó el componente) */
 
 /* Error Message */
 .error-message {
@@ -68,7 +62,6 @@
   font-weight: bold;
 }
 
-/* Pantalla Inicio */
 .pantalla-inicio {
   max-width: 800px;
   border-radius: 1rem;
@@ -76,25 +69,15 @@
   text-align: center;
 }
 
-/* Logo, player-stats, instrucciones, start-button, blockchain-info - NO SE USAN */
-
-/* Pantalla Juego - NO SE USA (componente eliminado) */
-
-/* Pantalla Fin - NO SE USA (componente eliminado) */
-
-/* blockchain-info, action-buttons, primary-button, secondary-button - NO SE USAN */
-
-/* === Levels Screen === */
 .levels-screen {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 12vh; /* deja espacio para el título centrado arriba */
+  padding-top: 12vh;
 }
 
-/* Small top-right login status badge */
 .status-badge {
   position: fixed;
   top: 18px;
@@ -150,7 +133,9 @@
   height: min(64vh, 640px);
   border-radius: 24px;
   border: 3px solid rgba(255,255,255,0.9);
-  background: rgba(0,0,0,0.28);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
   box-shadow: 0 10px 28px rgba(0,0,0,0.45);
@@ -159,14 +144,16 @@
 
 .level-card.unlocked:hover { transform: translateY(-6px); box-shadow: 0 16px 36px rgba(0,0,0,0.55); }
 
-.level-card.locked { opacity: 0.6; cursor: not-allowed; }
+.level-card.locked { 
+  opacity: 1; /* Mantener opacidad normal para que la imagen no se pierda */
+  cursor: not-allowed;
+  filter: brightness(0.30) contrast(0.8); /* Oscurecer la imagen manteniéndola visible */
+  box-shadow: inset 0 0 0 10000px rgba(0, 0, 0, 0.65); /* Capa oscura sobre la imagen */
+}
 .level-lock { position: absolute; top: 8px; right: 12px; font-size: 22px; }
 
 .levels-hint { color: #fff; opacity: 0.85; font-size: 14px; }
 
-/* tips-section - NO SE USA */
-
-/* Animations */
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
@@ -179,7 +166,6 @@
   90% { transform: translate3d(0,-4px,0); }
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .app-container {
     padding: 0.5rem;
@@ -190,23 +176,19 @@
     padding: 1rem;
   }
 
-  /* Background específico para mobile - fullscreen */
   .app-container:has(.pantalla-inicio-background) {
     background-image: url('/backgrounds/fondoInicio.png');
-    background-attachment: scroll; /* Mejor rendimiento en móvil */
+    background-attachment: scroll;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
-  /* Ajuste para pantalla inicio en móvil */
   .app-container:has(.pantalla-inicio-background) .pantalla-inicio {
     margin: 1rem;
     max-width: calc(100% - 2rem);
   }
 }
-
-/* Settings Button and Popup - NO SE USA (no hay componente Settings visible) */
 
 .escenario-root {
 	position: relative;
@@ -227,15 +209,18 @@
 	opacity: 0.95;
 }
 
-/* Escenarios por nivel: variaciones de color/ambiente */
-.escenario-1 .escenario-bg { 
-	background-image: url('/backgrounds/sceneOne.jpeg');
+.escenario-1.escenario-bg { 
+	background-image: url('/backgrounds/battleLevel1.jpeg');
 	filter: saturate(1.1) contrast(1.1) hue-rotate(0deg) brightness(1); 
 }
-.escenario-2 .escenario-bg { filter: saturate(0.9) contrast(1.1) hue-rotate(40deg) brightness(0.95); }
-.escenario-3 .escenario-bg { filter: saturate(1.2) contrast(1.2) hue-rotate(-35deg) brightness(0.9); }
-
-/* dialogs removidos */
+.escenario-2.escenario-bg { 
+	background-image: url('/backgrounds/battleLevel1.jpeg');
+	filter: saturate(1.1) contrast(1.1) hue-rotate(0deg) brightness(1); 
+}
+.escenario-3.escenario-bg { 
+	background-image: url('/backgrounds/battleLevel1.jpeg');
+	filter: saturate(1.1) contrast(1.1) hue-rotate(0deg) brightness(1); 
+}
 
 .side {
   position: absolute;
@@ -243,7 +228,7 @@
   display: flex;
     gap: 40px;
   align-items: center;
-    pointer-events: none; /* El contenedor no captura clicks, pero los hijos sí */
+    pointer-events: none;
 }
 
 .side-left {
@@ -252,7 +237,7 @@
 
 .side-right {
     right: 180px;
-    top: 220px; /* bajarlos más */
+    top: 220px;
     bottom: auto;
     gap: 56px;
 }
@@ -273,53 +258,78 @@
 	50% { transform: translateY(-6px); }
 }
 
-.actor-angel { background: linear-gradient(180deg, #c8e6ff 0%, #9bd1ff 100%); }
-.actor-mage { background: linear-gradient(180deg, #6a8dff 0%, #3956d8 100%); }
-.actor-hero { background: linear-gradient(180deg, #79d072 0%, #3ea94f 100%); }
-
-/* Enemigos: mismo GIF para los tres */
-.enemy,
-.enemy-caster,
-.enemy-skeleton,
+.enemy-caster {
+	background-image: url('/enemies/blue_dragon_attack.gif');
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: bottom center;
+	image-rendering: pixelated;
+    width: 250px;
+    height: 200px;
+	background-color: transparent;
+}
+.enemy-skeleton {
+	background-image: url('/enemies/blue_dragon_attack.gif');
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: bottom center;
+	image-rendering: pixelated;
+    width: 250px;
+    height: 200px;
+	background-color: transparent;
+}
 .enemy-drake {
 	background-image: url('/enemies/blue_dragon_attack.gif');
 	background-size: contain;
 	background-repeat: no-repeat;
 	background-position: bottom center;
 	image-rendering: pixelated;
-    width: 250px;  /* más grandes */
+    width: 250px;
     height: 200px;
 	background-color: transparent;
 }
 
-/* Enemigos alineados */
 .side-right .enemy:nth-child(1),
 .side-right .enemy:nth-child(2),
 .side-right .enemy:nth-child(3) { transform: translateY(0); }
 
-/* Héroes: mismo GIF para los tres del lado izquierdo */
-.actor,
-.actor-angel,
-.actor-mage,
+.actor-angel{
+	background-image: url('/heroes/heroe-one.gif');
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: bottom center;
+	image-rendering: pixelated;
+    width: 270px;
+    height: 200px;
+	background-color: transparent;
+}
+.actor-mage{
+	background-image: url('/heroes/heroe-one.gif');
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: bottom center;
+	image-rendering: pixelated;
+    width: 270px;
+    height: 200px;
+	background-color: transparent;
+}
 .actor-hero {
 	background-image: url('/heroes/heroe-one.gif');
 	background-size: contain;
 	background-repeat: no-repeat;
 	background-position: bottom center;
 	image-rendering: pixelated;
-    width: 270px; /* más grandes */
+    width: 270px;
     height: 200px;
 	background-color: transparent;
 }
 
-/* Héroes alineados */
 .side-left .actor:nth-child(1),
 .side-left .actor:nth-child(2),
 .side-left .actor:nth-child(3) { transform: translateY(0); }
 
-/* === Battle System Styles === */
 .side {
-	pointer-events: none; /* El contenedor no captura clicks */
+	pointer-events: none;
 }
 
 .actor,
@@ -364,8 +374,8 @@
 	transform: scale(1.12);
 	transition: all 0.3s ease;
 	filter: brightness(1.4) drop-shadow(0 0 20px rgba(255, 255, 255, 0.8));
-	background-size: contain; /* Mantener contain para que el gif se ajuste proporcionalmente */
-	background-position: center center; /* Centrar el gif para que se vea completo */
+	background-size: contain;
+	background-position: center center;
 	z-index: 100;
 }
 
@@ -383,7 +393,6 @@
 	animation: pulse-selectable-red 2s ease-in-out infinite;
 }
 
-/* Hover effect for selectable enemies - red glow */
 .enemy.selectable:hover {
 	border: 4px solid rgba(240, 120, 120, 0.9);
 	box-shadow: 
@@ -406,8 +415,8 @@
 	transform: scale(1.12);
 	transition: all 0.3s ease;
 	filter: brightness(1.4) drop-shadow(0 0 20px rgba(220, 100, 100, 0.6));
-	background-size: contain; /* Mantener contain para que el gif se ajuste proporcionalmente */
-	background-position: center center; /* Centrar el gif para que se vea completo */
+	background-size: contain;
+	background-position: center center;
 	z-index: 100;
 }
 
@@ -451,7 +460,6 @@
 	cursor: not-allowed;
 }
 
-/* === HP Bar Styles === */
 .character-wrapper {
   display: flex;
   flex-direction: column;
@@ -481,7 +489,7 @@
 }
 
 .hp-bar-bg {
-	width: 160px; /* Ancho fijo para todas las barras */
+	width: 160px;
 	height: 28px;
 	background: 
 		linear-gradient(180deg, #5a4a3a 0%, #3d2f22 50%, #2a1f16 100%),
@@ -507,12 +515,10 @@
 	box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
 }
 
-/* HP bar para enemigos - color rojo */
 .side-right .hp-bar-fill {
 	background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%) !important;
 }
 
-/* HP bar para héroes - color verde (por defecto ya está en .hp-bar-fill) */
 .side-left .hp-bar-fill {
 	background: linear-gradient(90deg, #4ade80 0%, #22c55e 100%) !important;
 }
@@ -531,13 +537,12 @@
 	z-index: 10;
 	font-weight: bold;
 	white-space: nowrap;
-	font-size: 8px; /* Reducido de 10px a 8px */
+	font-size: 8px;
 }
 
-/* === Bottom Design: Rectángulo con 7 círculos === */
 .bottom-design {
 	position: absolute;
-	bottom: 20px; /* subido para dejar espacio a una barra inferior visible */
+	bottom: 20px;
 	left: 50%;
 	transform: translateX(-50%);
 	z-index: 10;
@@ -547,7 +552,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	background: rgba(255, 255, 255, 0.28); /* más opaco */
+	background: rgba(255, 255, 255, 0.28);
 	border: 2px solid rgba(255, 255, 255, 0.8);
 	border-radius: 16px;
 	padding: 12px 18px;
@@ -557,10 +562,9 @@
 	min-width: 420px;
 }
 
-/* Iconos de skill */
 .skill-icon {
-	width: 48px; /* más grande */
-	height: 48px; /* más grande */
+	width: 48px;
+	height: 48px;
 	border-radius: 10px;
 	border: 3px solid rgba(255,255,255,0.9);
 	box-shadow: 0 3px 8px rgba(0,0,0,0.5);
@@ -568,7 +572,6 @@
 	background: rgba(0,0,0,0.28);
 }
 
-/* === Battle Screen Skills Buttons === */
 .skills-buttons-container {
 	position:fixed;
 	right: 20px;

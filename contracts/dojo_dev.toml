@@ -1,10 +1,10 @@
 [world]
-name = "destiny2"
+name = "destiny4"
 description = "The official Dojo Starter guide, the quickest and most streamlined way to get your Dojo Autonomous World up and running. This guide will assist you with the initial setup, from cloning the repository to deploying your world."
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://github.com/dojoengine/dojo-starter"
-seed = "destiny2"
+seed = "destiny4"
 
 [world.socials]
 x = "https://x.com/ohayo_dojo"
@@ -13,13 +13,13 @@ github = "https://github.com/dojoengine/dojo-starter"
 telegram = "https://t.me/dojoengine"
 
 [namespace]
-default = "destiny2"
+default = "destiny4"
 
 [env]
-rpc_url = "https://api.cartridge.gg/x/destiny2/katana"
+rpc_url = "https://api.cartridge.gg/x/destiny4/katana"
 # Default account for katana with seed = 0
 account_address = "0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819"
 private_key = "0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4"
 
 [writers]
-"destiny2" = ["destiny2-actions"]
+"destiny4" = ["destiny4-actions"]
