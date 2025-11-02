@@ -1,10 +1,8 @@
 import { useEffect, useRef, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { useBattleLogic } from '../hooks/useBattleLogic'
-import { HeroId, EnemyId } from '../types/battle'
+// import { useBattleLogic } from '../hooks/useBattleLogic'
 import '../App.css'
-import { levelsConfig, type LevelId } from '../config/levelsConfig'
-import { getSkillsIdsByHeroId, getSkillById } from '../utils/battleUtils'
+// import { getSkillsIdsByHeroId, getSkillById } from '../utils/battleUtils'
 import { useBattleData } from '../hooks/useBattleData'
 import { dojoConfig } from '../dojo/dojoConfig'
 
@@ -23,12 +21,8 @@ export default function BattleScreen() {
     }
 
       const loadAllStatuses = async () => {
-      console.log('[BattleScreen] 🚀 Starting loadAllStatuses')
-      console.log('[BattleScreen] Battle:', battle)
-      
       const loadCharacterStatus = async (characterId: number): Promise<any | null> => {
         try {
-          console.log(`[BattleScreen] 📡 Loading character ${characterId} for battle ${battle.id}`)
           const response = await fetch(`${dojoConfig.toriiUrl}/graphql`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -58,29 +52,22 @@ export default function BattleScreen() {
           })
           
           if (!response.ok) {
-            console.error(`[BattleScreen] ❌ HTTP error ${response.status} for character ${characterId}`)
             throw new Error(`HTTP error! status: ${response.status}`)
           }
           
           const result = await response.json()
-          console.log(`[BattleScreen] 📦 Full response for character ${characterId}:`, JSON.stringify(result, null, 2))
           
           if (result.errors) {
-            console.error(`[BattleScreen] ❌ GraphQL errors for character ${characterId}:`, result.errors)
             return null
           }
           
           if (result.data?.destiny4CharacterStatusModels?.edges?.length > 0) {
             const node = result.data.destiny4CharacterStatusModels.edges[0].node
-            console.log(`[BattleScreen] ✅ Found data for character ${characterId}:`, node)
             return node
           }
           
-          console.warn(`[BattleScreen] ⚠️ No edges found for character ${characterId}`)
-          console.warn(`[BattleScreen] Data structure:`, result.data)
           return null
         } catch (error) {
-          console.error(`[BattleScreen] ❌ Exception loading character ${characterId}:`, error)
           return null
         }
       }
@@ -89,10 +76,6 @@ export default function BattleScreen() {
       const heroIds = battle.heroes_ids || []
       const monsterIds = battle.monsters_ids || []
       
-      console.log(`[BattleScreen] 📊 Preparing to load ${heroIds.length} heroes and ${monsterIds.length} monsters`)
-      console.log('[BattleScreen] Hero IDs:', heroIds)
-      console.log('[BattleScreen] Monster IDs:', monsterIds)
-      
       const heroPromises = heroIds.map((heroId: any) => 
         loadCharacterStatus(Number(heroId))
       )
@@ -100,21 +83,13 @@ export default function BattleScreen() {
         loadCharacterStatus(Number(monsterId))
       )
 
-      console.log('[BattleScreen] ⏳ Waiting for all promises to resolve...')
       const [heroResults, monsterResults] = await Promise.all([
         Promise.all(heroPromises),
         Promise.all(monsterPromises)
       ])
 
-      console.log('[BattleScreen] 📊 Hero results:', heroResults)
-      console.log('[BattleScreen] 📊 Monster results:', monsterResults)
-
       const validHeroes = heroResults.filter((status: any) => status !== null)
       const validMonsters = monsterResults.filter((status: any) => status !== null)
-      
-      console.log(`[BattleScreen] ✅ Filtered: ${validHeroes.length} heroes, ${validMonsters.length} monsters`)
-      console.log('[BattleScreen] ✅ Valid heroes:', validHeroes)
-      console.log('[BattleScreen] ✅ Valid monsters:', validMonsters)
 
       setHeroesStatus(validHeroes)
       setMonstersStatus(validMonsters)
@@ -123,121 +98,148 @@ export default function BattleScreen() {
     loadAllStatuses()
   }, [battle?.id])
 
-  const {
-    battleState,
-    selectHero,
-    selectEnemy,
-    resetTurn,
-    getHeroActions,
-    getCompletedActionsForBackend,
-    selectSkill,
-  } = useBattleLogic()
+  // const {
+  //   battleState,
+  //   selectHero,
+  //   selectEnemy,
+  //   resetTurn,
+  //   getHeroActions,
+  //   getCompletedActionsForBackend,
+  //   selectSkill,
+  // } = useBattleLogic()
 
   const hasProcessedTurn = useRef(false)
-  const heroActions = getHeroActions()
+  // const heroActions = getHeroActions()
 
-  const selectedHeroClass = (heroId: HeroId) => {
-    if (battleState.selectedHero === heroId) return 'selected'
-    const action = heroActions.find((a) => a.heroId === heroId)
-    if (action?.completed) return 'completed'
-    if (battleState.phase === 'SELECT_HERO' && action && !action.completed) return 'selectable'
-    return ''
-  }
+  // const selectedHeroClass = (heroId: HeroId) => {
+  //   if (battleState.selectedHero === heroId) return 'selected'
+  //   const action = heroActions.find((a) => a.heroId === heroId)
+  //   if (action?.completed) return 'completed'
+  //   if (battleState.phase === 'SELECT_HERO' && action && !action.completed) return 'selectable'
+  //   return ''
+  // }
 
-  const selectedEnemyClass = () => {
-    if (battleState.phase === 'SELECT_ENEMY' && battleState.selectedSkill) return 'selectable'
-    return ''
-  }
+  // const selectedEnemyClass = () => {
+  //   if (battleState.phase === 'SELECT_ENEMY' && battleState.selectedSkill) return 'selectable'
+  //   return ''
+  // }
 
-  const getHero = (heroId: HeroId) => battleState.heroes.find((h) => h.id === heroId)
-  const getEnemy = (enemyId: EnemyId) => battleState.enemies.find((e) => e.id === enemyId)
+  // const getHero = (heroId: HeroId) => battleState.heroes.find((h) => h.id === heroId)
+  // const getEnemy = (enemyId: EnemyId) => battleState.enemies.find((e) => e.id === enemyId)
 
-  // Obtener los skills del héroe seleccionado
-  const selectedHeroSkills = useMemo(() => {
-    if (battleState.selectedHero === null) return []
+  // // Obtener los skills del héroe seleccionado
+  // const selectedHeroSkills = useMemo(() => {
+  //   if (battleState.selectedHero === null) return []
     
-    const hero = getHero(battleState.selectedHero)
-    if (!hero) return []
+  //   const hero = getHero(battleState.selectedHero)
+  //   if (!hero) return []
     
-    // Si el héroe tiene skills en su array, usarlos (convertir SkillId enum a number)
-    if (hero.skills && hero.skills.length > 0) {
-      return hero.skills.map(skill => {
-        // Convertir SkillId enum a número si es necesario
-        const skillId = typeof skill.id === 'number' ? skill.id : Number(skill.id)
-        return skillId
-      })
-    }
+  //   // Si el héroe tiene skills en su array, usarlos (convertir SkillId enum a number)
+  //   if (hero.skills && hero.skills.length > 0) {
+  //     return hero.skills.map(skill => {
+  //       // Convertir SkillId enum a número si es necesario
+  //       const skillId = typeof skill.id === 'number' ? skill.id : Number(skill.id)
+  //       return skillId
+  //     })
+  //   }
     
-    // Si no, usar la función getSkillsIdsByHeroId como fallback
-    return getSkillsIdsByHeroId(battleState.selectedHero)
-  }, [battleState.selectedHero, battleState.heroes])
+  //   // Si no, usar la función getSkillsIdsByHeroId como fallback
+  //   return getSkillsIdsByHeroId(battleState.selectedHero)
+  // }, [battleState.selectedHero, battleState.heroes])
 
-  // Función helper para obtener el icono del skill
-  const getSkillIcon = (skillId: number): string => {
-    const skill = getSkillById(skillId)
-    if (!skill) return '❓'
+  // // Función helper para obtener el icono del skill
+  // const getSkillIcon = (skillId: number): string => {
+  //   const skill = getSkillById(skillId)
+  //   if (!skill) return '❓'
     
-    // Determinar icono según el tipo de skill
-    if (skill.damage > 0) return '⚔️'
-    if (skill.heal > 0) return '❤️'
-    if (skill.buff > 0) return '✨'
-    if (skill.debuff > 0) return '💫'
-    return '🛡️'
-  }
+  //   // Determinar icono según el tipo de skill
+  //   if (skill.damage > 0) return '⚔️'
+  //   if (skill.heal > 0) return '❤️'
+  //   if (skill.buff > 0) return '✨'
+  //   if (skill.debuff > 0) return '💫'
+  //   return '🛡️'
+  // }
 
-  const handleHeroClick = (heroId: HeroId) => {
-    // Solo permitir seleccionar héroe en la fase SELECT_HERO
-    if (battleState.phase === 'SELECT_HERO') {
-      const heroAction = battleState.heroActions.find((a) => a.heroId === heroId)
-      if (heroAction && !heroAction.completed) {
-        console.log('🎯 Héroe seleccionado:', HeroId[heroId])
-        selectHero(heroId)
-      }
-    }
-  }
+  // const handleHeroClick = (heroId: HeroId) => {
+  //   // Solo permitir seleccionar héroe en la fase SELECT_HERO
+  //     if (battleState.phase === 'SELECT_HERO') {
+  //       const heroAction = battleState.heroActions.find((a) => a.heroId === heroId)
+  //       if (heroAction && !heroAction.completed) {
+  //         selectHero(heroId)
+  //       }
+  //     }
+  // }
 
-  const handleEnemyClick = (enemyId: EnemyId) => {
-    // Solo permitir seleccionar enemigo en la fase SELECT_ENEMY cuando hay héroe y skill seleccionados
-    if (battleState.phase === 'SELECT_ENEMY' && battleState.selectedHero !== null && battleState.selectedSkill !== null) {
-      console.log('🎯 Enemigo seleccionado:', EnemyId[enemyId], 'para atacar')
-      selectEnemy(enemyId)
-    }
-  }
+  // const handleEnemyClick = (enemyId: EnemyId) => {
+  //   // Solo permitir seleccionar enemigo en la fase SELECT_ENEMY cuando hay héroe y skill seleccionados
+  //   if (battleState.phase === 'SELECT_ENEMY' && battleState.selectedHero !== null && battleState.selectedSkill !== null) {
+  //     selectEnemy(enemyId)
+  //   }
+  // }
 
-  useEffect(() => {
-    console.log('🔍 Battle data:', battle)
-    console.log('🔍 Heroes status:', heroesStatus)
-    console.log('🔍 Monsters status:', monstersStatus)
+  // useEffect(() => {
+  //   const allCompleted = heroActions.every((a) => a.completed)
+  //   const thirdHeroCompleted = heroActions.find((a) => a.heroId === HeroId.HERO)?.completed
 
-    const allCompleted = heroActions.every((a) => a.completed)
-    const thirdHeroCompleted = heroActions.find((a) => a.heroId === HeroId.HERO)?.completed
+  //   if (allCompleted && thirdHeroCompleted && !hasProcessedTurn.current) {
+  //     hasProcessedTurn.current = true
+  //     const completedActions = getCompletedActionsForBackend()
+  //     if (completedActions) {
+  //       const timer = setTimeout(() => {
+  //         resetTurn()
+  //         hasProcessedTurn.current = false
+  //       }, 1000)
+  //       return () => clearTimeout(timer)
+  //     } else {
+  //       hasProcessedTurn.current = false
+  //     }
+  //   }
 
-    if (allCompleted && thirdHeroCompleted && !hasProcessedTurn.current) {
-      hasProcessedTurn.current = true
-      const completedActions = getCompletedActionsForBackend()
-      if (completedActions) {
-        const timer = setTimeout(() => {
-          resetTurn()
-          hasProcessedTurn.current = false
-        }, 1000)
-        return () => clearTimeout(timer)
-      } else {
-        hasProcessedTurn.current = false
-      }
-    }
-
-    if (!allCompleted || !thirdHeroCompleted) hasProcessedTurn.current = false
-  }, [battle, heroActions, getCompletedActionsForBackend, resetTurn])
+  //   if (!allCompleted || !thirdHeroCompleted) hasProcessedTurn.current = false
+  // }, [battle, heroActions, getCompletedActionsForBackend, resetTurn])
 
   return (
+    <div className={`escenario-root ${battle?.level}`}>
+    <div className="escenario-bg" />
     <div className="battle-screen">
       <h1>Battle Screen</h1>
       <p>Battle ID: {battleId}</p>
+      <p>Level: {Number(battle?.level || 0)}</p>
       <p>Battle data: {JSON.stringify(battle)}</p>
-    </div>
-    // <div className={`escenario-root ${config.backgroundClass}`}>
-    //   <div className="escenario-bg" />
+      <p>Heroes status: {JSON.stringify(heroesStatus)}</p>
+      <p>Monsters status: {JSON.stringify(monstersStatus)}</p>
 
+      <div className="heroes-status-list">
+        {heroesStatus?.map((status: any) => (
+          <div key={status.character_id} className="character-wrapper">
+            <img
+              src={`/heroes/heroe${status.character_id}.gif`}
+              alt={`Heroe ${status.character_id}`}
+            />
+            <div className="hp-bar-container">
+              <span className="hp-label">HP</span>
+              <div className="hp-bar-bg">
+                <div
+                  className="hp-bar-fill"
+                  style={{
+                    width: `${status.max_hp && status.max_hp > 0
+                      ? (status.current_hp / status.max_hp) * 100
+                      : 0}%`
+                  }}
+                />
+                <span className="hp-text">
+                  {status.current_hp || 0}/{status.max_hp || 0}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      // DIV PARA HEROES (heroes_ids.map)
+      // DIV PARA ENEMIGOS (monsters_ids.map)
+      // DIV PARA CUADRADO DE INFO
+    </div>
+    </div>
     //   <div className="side side-left">
     //     {/* Angel */}
     //     <div className="character-wrapper">
@@ -276,18 +278,6 @@ export default function BattleScreen() {
     //     </div>
     //   </div>
 
-    //   <div className="side side-right">
-    //     {config.enemies.map((enemyId, idx) => (
-    //       <div key={`${enemyId}-${idx}`} className="character-wrapper">
-    //         <div className="hp-bar-container">
-    //           <span className="hp-label">HP</span>
-    //           <div className="hp-bar-bg">
-    //             <div className="hp-bar-fill" style={{ width: `${((getEnemy(enemyId)?.health || 0) / (getEnemy(enemyId)?.maxHealth || 1)) * 100}%` }} />
-    //             <span className="hp-text">{getEnemy(enemyId)?.health || 0}/{getEnemy(enemyId)?.maxHealth || 0}</span>
-    //           </div>
-    //         </div>
-    //         <div className={`enemy ${enemyId === EnemyId.CASTER ? 'enemy-caster' : enemyId === EnemyId.SKELETON ? 'enemy-skeleton' : 'enemy-drake'} ${selectedEnemyClass()}`} onClick={() => handleEnemyClick(enemyId)} title={EnemyId[enemyId]} />
-    //       </div>
     //     ))}
     //   </div>
     //   {/* Botones de habilidades - mostrar dinámicamente según el héroe seleccionado */}

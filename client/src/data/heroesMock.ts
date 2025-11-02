@@ -10,8 +10,8 @@
  * - Skills: id, name, description, damage, heal, buff, debuff
  */
 
-import { HeroId, EnemyId } from '../types/battle'
-import type { Hero, Enemy } from '../types/battle'
+// import { HeroId, EnemyId } from '../types/battle'
+// import type { Hero, Enemy } from '../types/battle'
 
 /**
  * Mockup de datos de héroes con todas sus stats
@@ -22,73 +22,73 @@ import type { Hero, Enemy } from '../types/battle'
  * - defense: Defensa
  * - skills: Array de skills disponibles (en el futuro vendrá del backend)
  */
-export const HEROES_MOCK_DATA: Hero[] = [
-  {
-    id: HeroId.ANGEL,
-    name: 'Angel',
-    health: 100,
-    maxHealth: 100,
-    attack: 15,
-    defense: 10,
-    skills: [], // Los skills se obtienen dinámicamente desde battleUtils
-    // En el futuro el backend devolverá los skills aquí directamente
-  },
-  {
-    id: HeroId.MAGE,
-    name: 'Mage',
-    health: 80,
-    maxHealth: 80,
-    attack: 20,
-    defense: 5,
-    skills: [], // Los skills se obtienen dinámicamente desde battleUtils
-    // En el futuro el backend devolverá los skills aquí directamente
-  },
-  {
-    id: HeroId.HERO,
-    name: 'Hero',
-    health: 90,
-    maxHealth: 90,
-    attack: 18,
-    defense: 8,
-    skills: [], // Los skills se obtienen dinámicamente desde battleUtils
-    // En el futuro el backend devolverá los skills aquí directamente
-  },
-]
+// export const HEROES_MOCK_DATA: Hero[] = [
+//   {
+//     id: HeroId.ANGEL,
+//     name: 'Angel',
+//     health: 100,
+//     maxHealth: 100,
+//     attack: 15,
+//     defense: 10,
+//     skills: [], // Los skills se obtienen dinámicamente desde battleUtils
+//     // En el futuro el backend devolverá los skills aquí directamente
+//   },
+//   {
+//     id: HeroId.MAGE,
+//     name: 'Mage',
+//     health: 80,
+//     maxHealth: 80,
+//     attack: 20,
+//     defense: 5,
+//     skills: [], // Los skills se obtienen dinámicamente desde battleUtils
+//     // En el futuro el backend devolverá los skills aquí directamente
+//   },
+//   {
+//     id: HeroId.HERO,
+//     name: 'Hero',
+//     health: 90,
+//     maxHealth: 90,
+//     attack: 18,
+//     defense: 8,
+//     skills: [], // Los skills se obtienen dinámicamente desde battleUtils
+//     // En el futuro el backend devolverá los skills aquí directamente
+//   },
+// ]
 
-/**
- * Mockup de datos de enemigos con todas sus stats
- * Stats disponibles:
- * - health: Vida actual
- * - maxHealth: Vida máxima
- * - attack: Poder de ataque
- * - defense: Defensa
- */
-export const ENEMIES_MOCK_DATA: Enemy[] = [
-  {
-    id: EnemyId.CASTER,
-    name: 'Caster',
-    health: 60,
-    maxHealth: 60,
-    attack: 12,
-    defense: 5,
-  },
-  {
-    id: EnemyId.SKELETON,
-    name: 'Skeleton',
-    health: 80,
-    maxHealth: 80,
-    attack: 10,
-    defense: 8,
-  },
-  {
-    id: EnemyId.DRAKE,
-    name: 'Drake',
-    health: 100,
-    maxHealth: 100,
-    attack: 15,
-    defense: 10,
-  },
-]
+// /**
+//  * Mockup de datos de enemigos con todas sus stats
+//  * Stats disponibles:
+//  * - health: Vida actual
+//  * - maxHealth: Vida máxima
+//  * - attack: Poder de ataque
+//  * - defense: Defensa
+//  */
+// export const ENEMIES_MOCK_DATA: Enemy[] = [
+//   {
+//     id: EnemyId.CASTER,
+//     name: 'Caster',
+//     health: 60,
+//     maxHealth: 60,
+//     attack: 12,
+//     defense: 5,
+//   },
+//   {
+//     id: EnemyId.SKELETON,
+//     name: 'Skeleton',
+//     health: 80,
+//     maxHealth: 80,
+//     attack: 10,
+//     defense: 8,
+//   },
+//   {
+//     id: EnemyId.DRAKE,
+//     name: 'Drake',
+//     health: 100,
+//     maxHealth: 100,
+//     attack: 15,
+//     defense: 10,
+//   },
+// ]
 
 /**
  * Notas para integración con backend:

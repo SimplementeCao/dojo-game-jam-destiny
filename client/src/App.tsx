@@ -166,17 +166,6 @@ function Home() {
   // Log y redirección cuando la wallet se conecta
   useEffect(() => {
     if (isConnected && account && address) {
-      console.log('🎉 ============================================')
-      console.log('🎉 WALLET CONECTADA EXITOSAMENTE')
-      console.log('🎉 ============================================')
-      console.log('📍 Address:', address)
-      console.log('👤 Account:', account)
-      console.log('📊 Status:', status)
-      console.log('✅ Estado de conexión: CONECTADA')
-      console.log('🚀 Navegando a /levels para jugar...')
-      console.log('🎉 ============================================')
-      
-      // Redirigir automáticamente a levels para jugar
       navigate('/levels')
     }
   }, [isConnected, account, address, status, navigate])

@@ -21,11 +21,9 @@ export const useBattleData = (battleId?: number) => {
   const loadBattleData = async () => {
     
     if (!battleId || !client) {
-      console.log('[useBattleData] ⚠️ Missing battleId or client:', { battleId, hasClient: !!client });
       return;
     }
 
-    console.log(`[useBattleData] 🔄 Loading battle data for ID: ${battleId}`);
     setLoading(true);
     setError(null);
 
@@ -46,8 +44,6 @@ export const useBattleData = (battleId?: number) => {
           }
         }
       `;
-      
-      console.log('[useBattleData] 📡 Sending GraphQL query:', { battleId, query: battleQuery });
       
       const [battleResponse] = await Promise.all([
         fetch(`${dojoConfig.toriiUrl}/graphql`, {
@@ -70,12 +66,9 @@ export const useBattleData = (battleId?: number) => {
         battleResponse.json()
       ]);
       
-      console.log('[useBattleData] 📦 GraphQL response:', JSON.stringify(battleResult, null, 2));
-      
       let battleData: Battle | null = null;
       
       if (battleResult.errors) {
-        console.error('[useBattleData] GraphQL errors:', battleResult.errors);
         throw new Error(`GraphQL battle error: ${battleResult.errors[0]?.message || 'Unknown error'}`);
       }
       
@@ -90,17 +83,12 @@ export const useBattleData = (battleId?: number) => {
           monsters_ids: battleNode.monsters_ids,
           is_finished: battleNode.is_finished,
         } as Battle;
-        
-        console.log('[useBattleData] ✅ Battle loaded:', battleData);
       } else {
-        console.warn(`[useBattleData] ⚠️ No battle found for ID: ${battleId}`);
-        console.warn('[useBattleData] Response data:', battleResult.data);
         battleData = null;
       }
       
       setBattle(battleData);
       } catch (err) {
-        console.error("Error loading battle data:", err);
         setError(err instanceof Error ? err.message : "Error loading battle data");
       } finally {
         setLoading(false);
@@ -127,7 +115,6 @@ export const useCharacterData = (characterId?: number) => {
 
   const loadCharacterData = async () => {
     if (!characterId || !client) {
-      console.log("Early return from loadCharacterData - missing requirements");
       return;
     }
 
@@ -223,7 +210,6 @@ export const useCharacterStatusData = (battleId?: number, characterId?: number) 
     setLoading(true);
     setError(null);
     
-    console.log("[useCharacterStatusData] BattleId:", battleId, "characterId:", characterId);
     try {
       const characterStatusQuery = `
         query GetCharacterStatus($battleId: Int!, $characterId: Int!) {
@@ -264,7 +250,6 @@ export const useCharacterStatusData = (battleId?: number, characterId?: number) 
       }
 
       const result = await response.json();
-      console.log("[CharacterStatusData] RESULT RESULT:", result);
       
       let characterStatusData: CharacterStatus | null = null;
       if (result.data?.destiny4CharacterStatusModels?.edges?.length > 0) {
@@ -281,16 +266,13 @@ export const useCharacterStatusData = (battleId?: number, characterId?: number) 
           evasion: toNumber(characterStatusNode.evasion),
         } as CharacterStatus;
         setCharacterStatus(characterStatusData);
-        console.log("[CharacterStatusData] loaded:", characterStatusData);
       } else if (result.errors) {
-        console.error("GraphQL errors:", result.errors);
         throw new Error(`GraphQL error: ${result.errors[0]?.message || 'Unknown error'}`);
       } else {
         characterStatusData = null;
         setCharacterStatus(null);
       }
     } catch (err) {
-      console.error("Error loading character status data:", err);
       setError(err instanceof Error ? err.message : "Error loading character status data");
     } finally {
       setLoading(false);
