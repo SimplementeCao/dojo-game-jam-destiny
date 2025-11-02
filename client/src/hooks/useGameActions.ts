@@ -55,7 +55,7 @@ export const useGameActions = () => {
 
   const play = async (
     actions: Array<string>,
-  ): Promise<{transaction_hash: string} | null> => {
+  ): Promise<{transaction_hash: string, parsed_events: { key: string, data: any }[]} | null> => {
     console.log("[play] - start - actions: ", actions);
     console.log("[play] - account: ", account);
 
@@ -80,24 +80,89 @@ export const useGameActions = () => {
 
       if (tx.isSuccess()) {
         const events = tx.events;
-        console.log("[play] - Events: ", events);
-        const damageEvents = events.filter((event) => event.keys[1] === getEventKey("DamageEvent"));
-        console.log("[play] - Damage events: ", damageEvents);
-        const buffEvents = events.filter((event) => event.keys[1] === getEventKey("BuffEvent"));
-        console.log("[play] - Buff events: ", buffEvents);
-        const debuffEvents = events.filter((event) => event.keys[1] === getEventKey("DebuffEvent"));
-        console.log("[play] - Debuff events: ", debuffEvents);
-        const healEvents = events.filter((event) => event.keys[1] === getEventKey("HealEvent"));
-        console.log("[play] - Heal events: ", healEvents);
-        const missEvents = events.filter((event) => event.keys[1] === getEventKey("MissEvent"));
-        console.log("[play] - Miss events: ", missEvents);
-        const playerWinEvents = events.filter((event) => event.keys[1] === getEventKey("PlayerWinEvent"));
-        console.log("[play] - Player win events: ", playerWinEvents);
-        const playerLoseEvents = events.filter((event) => event.keys[1] === getEventKey("PlayerLoseEvent"));
-        console.log("[play] - Player lose events: ", playerLoseEvents);
-        
+        const parsed_events: { key: string, data: any }[] = [];
+        events.forEach((event) => {
+          if (event.keys[1] == getEventKey("DamageEvent")) {
+            console.log("[play] - Damage event: ", event);
+            parsed_events.push({
+              key: "DamageEvent",
+              data: {
+                battle_id: event.data[1],
+                from_idx: event.data[3],
+                to_idx: event.data[4],
+                critical_hit: event.data[5],
+                damage: event.data[6],
+                is_monster: event.data[7],
+              },
+            });
+          } else if (event.keys[1] == getEventKey("BuffEvent")) {
+            parsed_events.push({
+              key: "BuffEvent",
+              data: {
+                battle_id: event.data[1],
+                from_idx: event.data[3],
+                to_idx: event.data[4],
+                buff_id: event.data[5],
+                amount: event.data[6],
+                is_monster: event.data[7],
+              },
+            });
+          } else if (event.keys[1] == getEventKey("DebuffEvent")) {
+            parsed_events.push({
+              key: "DebuffEvent",
+              data: {
+                battle_id: event.data[1],
+                from_idx: event.data[3],
+                to_idx: event.data[4],
+                debuff_id: event.data[5],
+                amount: event.data[6],
+                is_monster: event.data[7],
+              },
+            });
+          } else if (event.keys[1] == getEventKey("HealEvent")) {
+            parsed_events.push({
+              key: "HealEvent",
+              data: {
+                battle_id: event.data[1],
+                from_idx: event.data[3],
+                to_idx: event.data[4],
+                amount: event.data[5],
+                is_monster: event.data[6],
+              },
+            });
+          } else if (event.keys[1] == getEventKey("MissEvent")) {
+            parsed_events.push({
+              key: "MissEvent",
+              data: {
+                battle_id: event.data[1],
+                from_idx: event.data[3],
+                to_idx: event.data[4],
+                is_monster: event.data[5],
+              },
+            });
+          } else if (event.keys[1] == getEventKey("PlayerWinEvent")) {
+            parsed_events.push({
+              key: "PlayerWinEvent",
+              data: {
+                battle_id: event.data[1],
+                player: event.data[3],
+              },
+            });
+          } else if (event.keys[1] == getEventKey("PlayerLoseEvent")) {
+            parsed_events.push({
+              key: "PlayerLoseEvent",
+              data: {
+                battle_id: event.data[1],
+                player: event.data[3],
+              },
+            });
+          }
+        });
+
+        console.log("[play] - Parsed events: ", parsed_events);
+
         // Retornar objeto con transaction_hash para consistencia con startBattle
-        return { transaction_hash };
+        return { transaction_hash, parsed_events };
       } else {
         console.error("[play] - Transaction failed:", tx);
         setError("Transaction failed");

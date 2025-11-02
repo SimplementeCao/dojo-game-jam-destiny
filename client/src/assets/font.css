@@ -68,3 +68,62 @@
     font-size: 12rem; 
   }
 }
+
+/* Media queries para HomeScreen responsive - solo web */
+@media (max-width: 1600px) {
+  .titulo-text {
+    font-size: clamp(80px, 8vw, 180px);
+    letter-spacing: 3px;
+  }
+  
+  .press-start {
+    font-size: 25px;
+  }
+}
+
+@media (max-width: 1280px) {
+  .titulo-text {
+    font-size: clamp(60px, 7vw, 150px);
+    letter-spacing: 2px;
+  }
+  
+  .press-start {
+    font-size: 22px;
+  }
+  
+  .title-banner {
+    margin: -12vh 0 0 0;
+  }
+}
+
+@media (max-width: 1024px) {
+  .titulo-text {
+    font-size: clamp(45px, 6vw, 120px);
+    letter-spacing: 2px;
+    -webkit-text-stroke: 1px #ffffff;
+  }
+  
+  .press-start {
+    font-size: 20px;
+  }
+  
+  .title-banner {
+    margin: -10vh 0 0 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .titulo-text {
+    font-size: clamp(35px, 5vw, 100px);
+    letter-spacing: 1px;
+    -webkit-text-stroke: 1px #ffffff;
+  }
+  
+  .press-start {
+    font-size: 18px;
+  }
+  
+  .title-banner {
+    margin: -8vh 0 0 0;
+  }
+}

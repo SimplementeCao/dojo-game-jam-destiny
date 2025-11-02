@@ -81,6 +81,7 @@ pub struct DamageEvent {
     pub to_idx: u32,
     pub critical_hit: bool,
     pub damage: u32,
+    pub is_monster: bool,
 }
 
 #[derive(Copy, Drop, Serde)]
@@ -90,6 +91,7 @@ pub struct MissEvent {
     pub battle_id: u32,
     pub from_idx: u32,
     pub to_idx: u32,
+    pub is_monster: bool,
 }
 
 #[derive(Copy, Drop, Serde)]
@@ -100,6 +102,7 @@ pub struct HealEvent {
     pub from_idx: u32,
     pub to_idx: u32,
     pub amount: u32,
+    pub is_monster: bool,
 }
 
 #[derive(Copy, Drop, Serde)]
@@ -111,6 +114,7 @@ pub struct BuffEvent {
     pub to_idx: u32,
     pub buff_id: u32,
     pub amount: u32,
+    pub is_monster: bool,
 }
 
 
@@ -123,6 +127,7 @@ pub struct DebuffEvent {
     pub to_idx: u32,
     pub debuff_id: u32,
     pub amount: u32,
+    pub is_monster: bool,
 }
 
 #[derive(Copy, Drop, Serde)]

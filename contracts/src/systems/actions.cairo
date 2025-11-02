@@ -360,7 +360,7 @@ pub mod actions {
             if is_attack_action(action_id) {
                 let miss = random.between(0, 100) < (to_status.evasion).try_into().unwrap();
                 if miss {
-                    world.emit_event(@MissEvent { battle_id, from_idx, to_idx });
+                    world.emit_event(@MissEvent { battle_id, from_idx, to_idx, is_monster: is_monster_attack });
                     return;
                 }
 
@@ -395,7 +395,7 @@ pub mod actions {
                             to_status.current_hp + to_status.defense - damage
                         };
                 world
-                    .emit_event(@DamageEvent { battle_id, from_idx, to_idx, critical_hit, damage });
+                    .emit_event(@DamageEvent { battle_id, from_idx, to_idx, critical_hit, damage, is_monster: is_monster_attack });
                 world.write_model(@to_status);
             } else if is_heal_action(action_id) {
                 let amount = if action_id == HEAL_ACTION_ID {
@@ -413,7 +413,7 @@ pub mod actions {
                         } else {
                             to_status.current_hp + amount
                         };
-                world.emit_event(@HealEvent { battle_id, from_idx, to_idx, amount });
+                world.emit_event(@HealEvent { battle_id, from_idx, to_idx, amount, is_monster: is_monster_attack });
                 world.write_model(@to_status);
             }
             if is_buff_action(action_id) {
@@ -440,7 +440,7 @@ pub mod actions {
                 }
                 world
                     .emit_event(
-                        @BuffEvent { battle_id, from_idx, to_idx, buff_id: action_id, amount },
+                        @BuffEvent { battle_id, from_idx, to_idx, buff_id: action_id, amount, is_monster: is_monster_attack },
                     );
                 world.write_model(@to_status);
             } else if is_debuff_action(action_id) {
@@ -467,7 +467,7 @@ pub mod actions {
                 }
                 world
                     .emit_event(
-                        @DebuffEvent { battle_id, from_idx, to_idx, debuff_id: action_id, amount },
+                        @DebuffEvent { battle_id, from_idx, to_idx, debuff_id: action_id, amount, is_monster: is_monster_attack },
                     );
                 world.write_model(@to_status);
             }

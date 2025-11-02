@@ -1,7 +1,5 @@
 // Utilidades compartidas para la lógica de combate en todos los escenarios
 
-import { HeroId, SkillId } from '../types/battle'
-
 // Defini un objeto skill con las propiedades que necesitamos para el juego
 export interface Skill {
 	id: number
@@ -13,11 +11,11 @@ export interface Skill {
 	debuff: number
 }
 
-export const getSkillsIdsByHeroId = (heroId: HeroId): number[] => {
+export const getSkillsIdsByHeroId = (heroId: number): number[] => {
 	switch (heroId) {
-		case HeroId.ANGEL: return [1, 2, 3, 4, 5, 6, 7]
-		case HeroId.MAGE: return [1, 2, 3, 4, 5, 6, 7]
-		case HeroId.HERO: return [1, 2, 3, 4, 5, 6, 7]
+		case 1: return [2, 24, 22]
+		case 2: return [1, 3, 12]
+		case 3: return [3, 21, 23]
 		default: return []
 	}
 }
@@ -41,8 +39,8 @@ export const getSkillById = (skillId: number): Skill | undefined => {
 	return skills.find((skill) => skill.id === skillId)
 }
 
-export const getSkillName = (skillId: SkillId | number): string => {
-	const skill = getSkillById(typeof skillId === 'number' ? skillId : skillId)
+export const getSkillName = (skillId: number): string => {
+	const skill = getSkillById(skillId)
 	return skill?.name || 'Unknown'
 }
 

@@ -1491,7 +1491,7 @@
   "contracts": [
     {
       "address": "0x2685ded128bdfb2d53a03c1ecdfb15c0154fb2257e7a8e344f712fdf439d377",
-      "class_hash": "0x54937c99d25e0a29ff33f09adacdb2da2a1d9656eeeb6f1db294296800195a5",
+      "class_hash": "0x73aa88fc7af8d3eae55d9b91f1abcb568b912f2ef699d011315415ef96937bf",
       "abi": [
         {
           "type": "impl",
@@ -1870,31 +1870,31 @@
     },
     {
       "members": [],
-      "class_hash": "0x5b5ca5959750976feb4ba788456983690ffe16fa2abb189a8251704760a9cc4",
+      "class_hash": "0x6367824af6e0627821fc9daa0c8814ad96204d9cdcd3c0df224f5da873d68d2",
       "tag": "destiny4-BuffEvent",
       "selector": "0x691c30e26fd92763e4fb50f14e6588036a9ff5904e258174b2524fa18723d08"
     },
     {
       "members": [],
-      "class_hash": "0x2ca0596cb22e0f1f5ef6f57dbc7577741236f738c87619d783272be2b625df0",
+      "class_hash": "0x5c9b3c995c2c1351a43a7072795ad5c703f6a65a539ea420646ac64e38b29ac",
       "tag": "destiny4-DamageEvent",
       "selector": "0x213294b0fcd1994c09d916312f310305375881c44ca26c833b473261cbb9f5e"
     },
     {
       "members": [],
-      "class_hash": "0x7f8dd18dce0785a38be87bf6d4d58c4af98fb9966a214f7d2880355a591a968",
+      "class_hash": "0x5e9007f838b6aed7202f5a6113d58a7e4812b43e1317c3294d16f3f87013340",
       "tag": "destiny4-DebuffEvent",
       "selector": "0x5768103bc983d9a1ced41626d5dad5dd268b95948334695ea67a30e702e805d"
     },
     {
       "members": [],
-      "class_hash": "0x12ff2f6828d1c086a57050f318ff16f59fd3107d046dc31059e3426009139d1",
+      "class_hash": "0x54292f8ce54f3238b864808d1237ba522e89e7b868adf3949ab7694ae22955c",
       "tag": "destiny4-HealEvent",
       "selector": "0x68b4bc7f9c775828c14c68a48d766200c2b0c1cd46016f9f99b048f77a20987"
     },
     {
       "members": [],
-      "class_hash": "0x1bea0c3ebcd9fe463374d928e0c2475ed546a01777b0401d218f7c1d72fd9bd",
+      "class_hash": "0x4873a6eb387152f7e4e76b7a6b3bf80dd22b61578ef1c219fe7836396d2ec37",
       "tag": "destiny4-MissEvent",
       "selector": "0x6c465f66b2ebe1ea8348c8342bc72de381ac561afe8b3506d48188f6ef5e991"
     },
