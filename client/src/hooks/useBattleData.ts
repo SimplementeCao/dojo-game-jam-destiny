@@ -29,7 +29,7 @@ export const useBattleData = (battleId?: number) => {
     try {
       const battleQuery = `
         query GetBattle($battleId: Int!) {
-          destiny5BattleModels(where: { id: $battleId }) {
+          destiny6BattleModels(where: { id: $battleId }) {
             edges {
               node {
                 id
@@ -71,8 +71,8 @@ export const useBattleData = (battleId?: number) => {
         throw new Error(`GraphQL battle error: ${battleResult.errors[0]?.message || 'Unknown error'}`);
       }
       
-      if (battleResult.data?.destiny5BattleModels?.edges?.length > 0) {
-        const battleNode = battleResult.data.destiny5BattleModels.edges[0].node;
+      if (battleResult.data?.destiny6BattleModels?.edges?.length > 0) {
+        const battleNode = battleResult.data.destiny6BattleModels.edges[0].node;
         
         battleData = {
           id: toNumber(battleNode.id),
@@ -126,7 +126,7 @@ export const useCharacterStatusData = (battleId?: number, characterId?: number) 
     try {
       const characterStatusQuery = `
         query GetCharacterStatus($battleId: Int!, $characterId: Int!) {
-          destiny5CharacterStatusModels(
+          destiny6CharacterStatusModels(
             where: { 
               battle_id: $battleId,
               character_id: $characterId
@@ -165,8 +165,8 @@ export const useCharacterStatusData = (battleId?: number, characterId?: number) 
       const result = await response.json();
       
       let characterStatusData: CharacterStatus | null = null;
-      if (result.data?.destiny5CharacterStatusModels?.edges?.length > 0) {
-        const characterStatusNode = result.data.destiny5CharacterStatusModels.edges[0].node;
+      if (result.data?.destiny6CharacterStatusModels?.edges?.length > 0) {
+        const characterStatusNode = result.data.destiny6CharacterStatusModels.edges[0].node;
         
         characterStatusData = {
           battle_id: toNumber(characterStatusNode.battle_id),
@@ -223,7 +223,7 @@ export const useProgressData = (player?: string, level?: number) => {
     try {
       const progressQuery = `
         query GetProgress($player: String!, $level: Int!) {
-          destiny5ProgressModels(
+          destiny6ProgressModels(
             where: { 
               player: $player,
               level: $level
@@ -258,8 +258,8 @@ export const useProgressData = (player?: string, level?: number) => {
       const result = await response.json();
       
       let progressData: Progress | null = null;
-      if (result.data?.destiny5ProgressModels?.edges?.length > 0) {
-        const progressNode = result.data.destiny5ProgressModels.edges[0].node;
+      if (result.data?.destiny6ProgressModels?.edges?.length > 0) {
+        const progressNode = result.data.destiny6ProgressModels.edges[0].node;
 
         progressData = {
           player: progressNode.player,

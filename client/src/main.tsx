@@ -18,7 +18,7 @@ async function main() {
       worldAddress: dojoConfig.manifest.world.address,
     },
     domain: {
-      name: 'WP_DESTINY5',
+      name: 'WP_DESTINY6',
       version: '1.0',
       chainId: 'KATANA',
       revision: '1',

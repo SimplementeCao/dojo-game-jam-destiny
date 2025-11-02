@@ -198,7 +198,9 @@ pub mod actions {
                         hero_index,
                         monster_index,
                         action_id,
-                        is_monster_attack: false,
+                        battle.heroes_ids,
+                        battle.monsters_ids,
+                        false,
                     );
             }
 
@@ -271,6 +273,8 @@ pub mod actions {
                             monster_index,
                             hero_index,
                             action_id,
+                            battle.heroes_ids,
+                            monsters_alive_ids.span(),
                             true,
                         );
                 }
@@ -337,7 +341,7 @@ pub mod actions {
     #[generate_trait]
     impl InternalImpl of InternalTrait {
         fn world_default(self: @ContractState) -> WorldStorage {
-            self.world(@"destiny5")
+            self.world(@"destiny6")
         }
 
         fn do_action(
@@ -348,19 +352,20 @@ pub mod actions {
             from_idx: u32,
             to_idx: u32,
             action_id: u32,
+            heroes: Span<u32>,
+            monsters: Span<u32>,
             is_monster_attack: bool,
         ) {
-            let battle: Battle = world.read_model(battle_id);
             let mut from_status: CharacterStatus = if is_monster_attack {
-                world.read_model((battle_id, *battle.monsters_ids[from_idx]))
+                world.read_model((battle_id, *monsters[from_idx]))
             } else {
-                world.read_model((battle_id, *battle.heroes_ids[from_idx]))
+                world.read_model((battle_id, *heroes[from_idx]))
             };
 
             let mut to_status: CharacterStatus = if is_monster_attack {
-                world.read_model((battle_id, *battle.heroes_ids[to_idx]))
+                world.read_model((battle_id, *heroes[to_idx]))
             } else {
-                world.read_model((battle_id, *battle.monsters_ids[to_idx]))
+                world.read_model((battle_id, *monsters[to_idx]))
             };
 
             if is_attack_action(action_id) {
@@ -411,9 +416,9 @@ pub mod actions {
             } else if is_heal_action(action_id) {
                 let amount = 30;
                 let mut to_status: CharacterStatus = if is_monster_attack {
-                    world.read_model((battle_id, *battle.monsters_ids[to_idx]))
+                    world.read_model((battle_id, *monsters[to_idx]))
                 } else {
-                    world.read_model((battle_id, *battle.heroes_ids[to_idx]))
+                    world.read_model((battle_id, *heroes[to_idx]))
                 };
                 to_status
                     .current_hp =
@@ -427,9 +432,9 @@ pub mod actions {
             }
             if is_buff_action(action_id) {
                 let mut to_status: CharacterStatus = if is_monster_attack {
-                    world.read_model((battle_id, *battle.monsters_ids[to_idx]))
+                    world.read_model((battle_id, *monsters[to_idx]))
                 } else {
-                    world.read_model((battle_id, *battle.heroes_ids[to_idx]))
+                    world.read_model((battle_id, *heroes[to_idx]))
                 };
 
                 let amount = if action_id == BUFF_DEFENSE_ACTION_ID {
@@ -522,7 +527,7 @@ pub mod actions {
             } else if level == 2 {
                 [4, 5, 6].span()
             } else if level == 3 {
-                [5, 7, 6, 5].span()
+                [5, 7, 6, 4].span()
             } else {
                 [].span()
             };

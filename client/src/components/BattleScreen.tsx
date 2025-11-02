@@ -161,7 +161,7 @@ export default function BattleScreen() {
             body: JSON.stringify({
               query: `
                 query GetCharacterStatus($battleId: Int!, $characterId: Int!) {
-                  destiny5CharacterStatusModels(
+                  destiny6CharacterStatusModels(
                     where: { battle_id: $battleId, character_id: $characterId }
                   ) {
                     edges {
@@ -193,8 +193,8 @@ export default function BattleScreen() {
             return null
           }
           
-          if (result.data?.destiny5CharacterStatusModels?.edges?.length > 0) {
-            const node = result.data.destiny5CharacterStatusModels.edges[0].node
+          if (result.data?.destiny6CharacterStatusModels?.edges?.length > 0) {
+            const node = result.data.destiny6CharacterStatusModels.edges[0].node
             return node
           }
           
@@ -216,7 +216,7 @@ export default function BattleScreen() {
           body: JSON.stringify({
             query: `
               query GetBattle($battleId: Int!) {
-                destiny5BattleModels(where: { id: $battleId }) {
+                destiny6BattleModels(where: { id: $battleId }) {
                   edges {
                     node {
                       id
@@ -233,8 +233,8 @@ export default function BattleScreen() {
 
         if (battleQueryResponse.ok) {
           const battleQueryResult = await battleQueryResponse.json()
-          if (battleQueryResult.data?.destiny5BattleModels?.edges?.length > 0) {
-            const battleNode = battleQueryResult.data.destiny5BattleModels.edges[0].node
+          if (battleQueryResult.data?.destiny6BattleModels?.edges?.length > 0) {
+            const battleNode = battleQueryResult.data.destiny6BattleModels.edges[0].node
             updatedHeroIds = battleNode.heroes_ids || []
             updatedMonsterIds = battleNode.monsters_ids || []
           }
@@ -330,6 +330,37 @@ export default function BattleScreen() {
     }
     
     return position
+  }
+
+  // Function to update character HP based on damage or heal
+  const updateCharacterHP = (characterId: number, hpChange: number, isMonster: boolean) => {
+    if (isMonster) {
+      setMonstersStatus(prev => prev.map(status => {
+        if (status.character_id === characterId) {
+          const currentHP = parseToDecimal(status.current_hp) || 0
+          const maxHP = parseToDecimal(status.max_hp) || 1
+          const newHP = Math.max(0, Math.min(maxHP, currentHP + hpChange))
+          return {
+            ...status,
+            current_hp: newHP.toString()
+          }
+        }
+        return status
+      }))
+    } else {
+      setHeroesStatus(prev => prev.map(status => {
+        if (status.character_id === characterId) {
+          const currentHP = parseToDecimal(status.current_hp) || 0
+          const maxHP = parseToDecimal(status.max_hp) || 1
+          const newHP = Math.max(0, Math.min(maxHP, currentHP + hpChange))
+          return {
+            ...status,
+            current_hp: newHP.toString()
+          }
+        }
+        return status
+      }))
+    }
   }
 
   // Function to temporarily change a character's animation
@@ -430,15 +461,16 @@ export default function BattleScreen() {
             }
             if (toCharacterId !== null) {
               setCharacterAnimation(toCharacterId, 'dmg')
-            }
-            
-            // Show floating animation on target
-            if (toCharacterId !== null) {
+              
+              // Update HP: damage is negative
+              const damageValue = parseToDecimal(damage)
+              updateCharacterHP(toCharacterId, -damageValue, targetIsMonster)
+              
+              // Show floating animation on target
               const position = getCharacterPosition(toCharacterId, targetIsMonster)
               if (position) {
                 const isCritical = parseToDecimal(critical_hit) === 1
                 const color = isCritical ? '#ff6b6b' : '#ff3333' // Light red for critical, dark red for normal
-                const damageValue = parseToDecimal(damage)
                 addFloatingAnimation(
                   `-${damageValue}`,
                   position.x,
@@ -535,9 +567,12 @@ export default function BattleScreen() {
             }
             
             if (toCharacterId !== null) {
+              // Update HP: heal is positive
+              const amountValue = parseToDecimal(amount)
+              updateCharacterHP(toCharacterId, amountValue, isMonster)
+              
               const position = getCharacterPosition(toCharacterId, isMonster)
               if (position) {
-                const amountValue = parseToDecimal(amount)
                 addFloatingAnimation(
                   `+${amountValue}`,
                   position.x,
@@ -587,7 +622,7 @@ export default function BattleScreen() {
             if (isLastLevel) {
               // Game Over - All levels completed (green)
               addFloatingAnimation(
-                'GAME OVER',
+                'CONGRATULATIONS!',
                 centerX,
                 centerY,
                 '#51cf66', // Green for victory
