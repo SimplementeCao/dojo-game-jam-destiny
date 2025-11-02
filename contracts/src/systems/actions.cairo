@@ -423,7 +423,9 @@ pub mod actions {
                     10
                 } else if action_id == BUFF_ATTACK_ACTION_ID {
                     10
-                } else {
+                } else if action_id == BUFF_CRITICAL_CHANCE_ACTION_ID {
+                    10
+                }else {
                     0
                 };
 

@@ -42,3 +42,19 @@ export const getSkillName = (skillId: number): string => {
 	return skill?.name || 'Unknown'
 }
 
+// Helper function to determine if a skill targets allies (true) or enemies (false)
+export const isSkillForAllies = (skillId: number): boolean => {
+	const skill = getSkillById(skillId)
+	if (!skill) return false
+	// If it has heal or buff, it targets allies
+	return skill.heal > 0 || skill.buff > 0
+}
+
+// Helper function to determine if a skill targets enemies
+export const isSkillForEnemies = (skillId: number): boolean => {
+	const skill = getSkillById(skillId)
+	if (!skill) return false
+	// If it has damage or debuff, it targets enemies
+	return skill.damage > 0 || skill.debuff > 0
+}
+

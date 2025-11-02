@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import '../App.css'
 import { useBattleData } from '../hooks/useBattleData'
 import { dojoConfig } from '../dojo/dojoConfig'
 import { useGameActions } from '../hooks/useGameActions'
 import { useRef } from 'react'
 import FloatingNumber from './FloatingNumber'
-import { getSkillsIdsByCharacterId, getSkillById } from '../utils/battleUtils'
+import { getSkillsIdsByCharacterId, getSkillById, isSkillForAllies, isSkillForEnemies } from '../utils/battleUtils'
 
 interface FloatingAnimation {
   id: string
@@ -20,20 +20,26 @@ interface FloatingAnimation {
 
 export default function BattleScreen() {
   const { battleId } = useParams()
+  const navigate = useNavigate()
   const [heroesStatus, setHeroesStatus] = useState<any[]>([])
   const [monstersStatus, setMonstersStatus] = useState<any[]>([])
-  const [selectedHero, setSelectedHero] = useState<number | null>(null)
   const { battle } = useBattleData(Number(battleId || 0))
   const { play, loading } = useGameActions();
   const [floatingAnimations, setFloatingAnimations] = useState<FloatingAnimation[]>([])
   const [characterAnimations, setCharacterAnimations] = useState<{ [characterId: number]: 'hit' | 'dmg' | 'idle' }>({})
-  const [actions, setActions] = useState<number[]>([]) 
-  const [tempAction, setTempAction] = useState<number>(0)
+  const [, setActions] = useState<number[]>([]) 
+  const [, setTempAction] = useState<number>(0)
   const [hoveredCharacter, setHoveredCharacter] = useState<{ status: any; isMonster: boolean } | null>(null)
   const [hoveredCharacterSkills, setHoveredCharacterSkills] = useState<number[]>([])
+  // Track actions by hero index: heroIndex -> action number
+  const [heroActions, setHeroActions] = useState<{ [heroIndex: number]: number }>({})
+  // Track selected hero and skill for highlighting
+  const [selectedHeroIndex, setSelectedHeroIndex] = useState<number | null>(null)
+  const [selectedSkillId, setSelectedSkillId] = useState<number | null>(null)
   const loadAllStatuses = useRef<(() => Promise<void>) | null>(null)
   const heroesRefs = useRef<{ [key: number]: HTMLDivElement | null }>({})
   const monstersRefs = useRef<{ [key: number]: HTMLDivElement | null }>({})
+  const hasCalledPlay = useRef<boolean>(false)
 
   // Load characterStatus for heroes and monsters
   useEffect(() => {
@@ -44,6 +50,12 @@ export default function BattleScreen() {
     }
 
       const loadStatuses = async () => {
+      if (!battle || !battle.id) {
+        setHeroesStatus([])
+        setMonstersStatus([])
+        return
+      }
+
       const loadCharacterStatus = async (characterId: number): Promise<any | null> => {
         try {
           const response = await fetch(`${dojoConfig.toriiUrl}/graphql`, {
@@ -95,15 +107,52 @@ export default function BattleScreen() {
         }
       }
 
-      // Load heroes and monsters in parallel
-      const heroIds = battle.heroes_ids || []
-      const monsterIds = battle.monsters_ids || []
-      
-      const heroPromises = heroIds.map((heroId: any) => 
-        loadCharacterStatus(Number(heroId))
+      // Reload battle data directly to get updated IDs (characters removed when dead)
+      const battleQueryResponse = await fetch(`${dojoConfig.toriiUrl}/graphql`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: `
+            query GetBattle($battleId: Int!) {
+              destiny4BattleModels(where: { id: $battleId }) {
+                edges {
+                  node {
+                    id
+                    heroes_ids
+                    monsters_ids
+                  }
+                }
+              }
+            }
+          `,
+          variables: { battleId: battle.id }
+        })
+      })
+
+      let updatedHeroIds: any[] = []
+      let updatedMonsterIds: any[] = []
+
+      if (battleQueryResponse.ok) {
+        const battleQueryResult = await battleQueryResponse.json()
+        if (battleQueryResult.data?.destiny4BattleModels?.edges?.length > 0) {
+          const battleNode = battleQueryResult.data.destiny4BattleModels.edges[0].node
+          updatedHeroIds = battleNode.heroes_ids || []
+          updatedMonsterIds = battleNode.monsters_ids || []
+        }
+      }
+
+      // If query failed, fallback to current battle data
+      if (updatedHeroIds.length === 0 && updatedMonsterIds.length === 0) {
+        updatedHeroIds = battle.heroes_ids || []
+        updatedMonsterIds = battle.monsters_ids || []
+      }
+
+      // Load heroes and monsters in parallel using updated IDs
+      const heroPromises = updatedHeroIds.map((heroId: any) => 
+        loadCharacterStatus(parseToDecimal(heroId))
       )
-      const monsterPromises = monsterIds.map((monsterId: any) => 
-        loadCharacterStatus(Number(monsterId))
+      const monsterPromises = updatedMonsterIds.map((monsterId: any) => 
+        loadCharacterStatus(parseToDecimal(monsterId))
       )
 
       const [heroResults, monsterResults] = await Promise.all([
@@ -113,6 +162,13 @@ export default function BattleScreen() {
 
       const validHeroes = heroResults.filter((status: any) => status !== null)
       const validMonsters = monsterResults.filter((status: any) => status !== null)
+
+      console.log('🔄 Reloaded statuses:', {
+        heroes: validHeroes.length,
+        monsters: validMonsters.length,
+        heroIds: updatedHeroIds.map((id: any) => parseToDecimal(id)),
+        monsterIds: updatedMonsterIds.map((id: any) => parseToDecimal(id))
+      })
 
       setHeroesStatus(validHeroes)
       setMonstersStatus(validMonsters)
@@ -217,14 +273,39 @@ export default function BattleScreen() {
     // Remove animation after it ends
     setTimeout(() => {
       setFloatingAnimations(prev => prev.filter(a => a.id !== id))
-    }, 1500)
+    }, 1000)
   }
-
+ 
   const handlePlay = async () => {
-    const result = await play(["005", "111", "221"]);
+    // Reset actions immediately so user can select new actions
+    const currentActions = { ...heroActions }
+    setHeroActions({})
+    setActions([])
+    setTempAction(0)
+    setSelectedHeroIndex(null)
+    setSelectedSkillId(null)
+    setSelectionStep('hero')
+    
+    // Convert heroActions to array of strings in correct order
+    const actionStrings = heroesStatus.map((_, index) => {
+      const action = currentActions[index]
+      return action !== undefined ? String(action).padStart(3, '0') : '000'
+    })
+    
+    console.log('Playing with actions:', actionStrings)
+    const result = await play(actionStrings);
     if (result) {
       // Wait a moment for refs to be updated
       await new Promise(resolve => setTimeout(resolve, 100))
+
+      // Check if there's a win or lose event
+      let hasGameEndEvent = false
+      for (const event of result.parsed_events) {
+        if (event.key === "PlayerWinEvent" || event.key === "PlayerLoseEvent") {
+          hasGameEndEvent = true
+          break
+        }
+      }
 
       // Process events with a small delay between each one for better visualization
       for (let i = 0; i < result.parsed_events.length; i++) {
@@ -417,27 +498,68 @@ export default function BattleScreen() {
       const totalEvents = result.parsed_events.length
       const lastEventStartTime = totalEvents > 0 ? (totalEvents - 1) * 1000 : 0
       const animationDuration = 1500 // Duration of each floating animation
-      const timeUntilAllAnimationsEnd = lastEventStartTime + animationDuration + 500 // Extra 500ms buffer
+      const contractSyncDelay = 1000 // Additional delay to allow contract to sync and remove dead characters
+      const redirectDelay = hasGameEndEvent ? 1000 : 0 // 2.5 seconds delay before redirecting if game ended
+      const timeUntilAllAnimationsEnd = lastEventStartTime + animationDuration + contractSyncDelay
 
-      // Reload states after all animations end
-      setTimeout(async () => {
-        if (loadAllStatuses.current) {
-          await loadAllStatuses.current();
-        }
-      }, timeUntilAllAnimationsEnd);
+      // Reload states after all animations end and contract sync (only if game hasn't ended)
+      if (!hasGameEndEvent) {
+        setTimeout(async () => {
+          if (loadAllStatuses.current) {
+            await loadAllStatuses.current();
+          }
+          // Actions are already reset in handlePlay, no need to reset here again
+        }, timeUntilAllAnimationsEnd);
+      }
+
+      // If game ended (win or lose), redirect after all animations + delay
+      if (hasGameEndEvent) {
+        setTimeout(() => {
+          navigate('/levels')
+        }, timeUntilAllAnimationsEnd + redirectDelay)
+      }
     }
   }
 
-  const [selectionStep, setSelectionStep] = useState<'hero' | 'skill' | 'enemy'>('hero');
+  const [selectionStep, setSelectionStep] = useState<'hero' | 'skill' | 'enemy' | 'ally'>('hero');
 
   // All actions must be numbers (and arrays of number), not strings.
   // We'll compose the action step-by-step as numbers, always keeping 3 digit format for logs/UI, but store as numbers.
 
+  // Get skills for selected hero
+  const selectedHeroSkills = selectedHeroIndex !== null && heroesStatus[selectedHeroIndex]
+    ? getSkillsIdsByCharacterId(heroesStatus[selectedHeroIndex].character_id)
+    : []
+
+  // Check if all heroes have actions assigned
+  useEffect(() => {
+    if (heroesStatus.length > 0 && 
+        Object.keys(heroActions).length === heroesStatus.length && 
+        !loading &&
+        selectionStep === 'hero' &&
+        !hasCalledPlay.current) { // Only auto-play when in hero selection step and haven't called yet
+      // All heroes have actions, automatically call handlePlay
+      console.log('All heroes have actions, calling handlePlay')
+      hasCalledPlay.current = true
+      handlePlay().finally(() => {
+        // Reset the flag after play completes (allows next round)
+        hasCalledPlay.current = false
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [heroActions, heroesStatus.length, loading, selectionStep])
+
   const handleHeroClick = (heroIndex: number) => {
     if (selectionStep !== 'hero') return;
+    // Check if this hero already has an action
+    if (heroActions[heroIndex] !== undefined) {
+      console.log(`Hero ${heroIndex} already has an action assigned`)
+      return
+    }
     // 100 * index (skill and target come later)
     const heroNum = heroIndex * 100;
     setTempAction(heroNum);
+    setSelectedHeroIndex(heroIndex);
     setSelectionStep('skill');
     console.log(`hero index: ${heroIndex} (selected), Temp action: ${String(heroNum).padStart(3, "0")}`);
   };
@@ -449,21 +571,67 @@ export default function BattleScreen() {
       const num = prev + skillIndex;
       const result = num;
       console.log(`skill index: ${skillIndex} (selected), Temp action: ${String(result).padStart(3, '0')}`);
+      setSelectedSkillId(skillIndex);
+      // Determine if this skill targets allies or enemies
+      if (isSkillForAllies(skillIndex)) {
+        setSelectionStep('ally');
+      } else if (isSkillForEnemies(skillIndex)) {
+        setSelectionStep('enemy');
+      } else {
+        setSelectionStep('enemy'); // Default to enemy
+      }
       return result;
     });
-    setSelectionStep('enemy');
   };
 
   const handleMonsterClick = (monsterIndex: number) => {
     if (selectionStep !== 'enemy') return;
+    if (selectedHeroIndex === null) return;
+    
     setTempAction(prev => {
       // prev is Hero+Skill, add monsterIndex * 10 to get full action number
       const num = prev + monsterIndex * 10;
       const result = num;
       console.log(`monster index: ${monsterIndex} (selected), Final action: ${String(result).padStart(3, '0')}`);
+      
+      // Add to actions array and track by hero index
       setActions(a => [...a, result]);
+      setHeroActions(prev => ({
+        ...prev,
+        [selectedHeroIndex]: result
+      }));
+      
       setSelectionStep('hero');
       setTempAction(0); // Reset temp action for next sequence
+      setSelectedHeroIndex(null);
+      setSelectedSkillId(null);
+      return 0;
+    });
+  };
+
+  const handleAllyClick = (allyIndex: number) => {
+    if (selectionStep !== 'ally') return;
+    if (selectedHeroIndex === null) return;
+    
+    setTempAction(prev => {
+      // For allies, use their index directly (no * 10 needed since they're heroes)
+      // But we need to follow the same format: Hero*100 + Skill + Target*10
+      // For now, we'll use the ally's index as target
+      const num = prev + allyIndex * 10;
+      const result = num;
+      console.log(`ally index: ${allyIndex} (selected), Final action: ${String(result).padStart(3, '0')}`);
+      
+      // Add to actions array and track by hero index
+      setActions(a => [...a, result]);
+      setHeroActions(prev => ({
+        ...prev,
+        [selectedHeroIndex]: result
+      }));
+      
+      setSelectionStep('hero');
+      setTempAction(0); // Reset temp action for next sequence
+      setSelectedHeroIndex(null);
+      setSelectedSkillId(null);
       return 0;
     });
   };
@@ -471,27 +639,52 @@ export default function BattleScreen() {
 
   return (
     <div className={`escenario-root ${battle?.level}`}>
+      <style>{`
+        @keyframes fadeInSlideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        
+        @keyframes fadeInSlideRight {
+          from {
+            opacity: 0;
+            transform: translateX(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+      `}</style>
       <div className="contenedor-todo">
-        <button
-          onClick={handlePlay}
-          disabled={loading}
-          style={{ 
-            position: 'absolute', 
-            top: '10px', 
-            left: '10px', 
-            zIndex: 1000,
-            opacity: loading ? 0.5 : 1,
-            cursor: loading ? 'not-allowed' : 'pointer'
-          }}
-        >
-          PLAY
-        </button>
-
         {/* TOP: Monsters infoskills */}
         <div className="contenedor-top">
         <div className="div-espacio-info" style={{
           marginLeft: '20px',
-          marginTop: '20px'
+          marginTop: '20px',
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          paddingRight: '10px'
         }}>
           {hoveredCharacter ? (
             <div style={{
@@ -503,7 +696,15 @@ export default function BattleScreen() {
               fontFamily: "'Press Start 2P', monospace",
               fontSize: '10px',
               lineHeight: '1.6',
-              minWidth: '200px'
+              width: '100%',
+              minHeight: '100%',
+              opacity: 0,
+              transform: 'translateY(-10px)',
+              animation: 'fadeInSlideDown 0.3s ease-out forwards',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center'
             }}>
               <div style={{ 
                 marginBottom: '10px', 
@@ -542,7 +743,9 @@ export default function BattleScreen() {
                 <div style={{
                   borderTop: '1px solid rgba(255, 255, 255, 0.2)',
                   paddingTop: '10px',
-                  marginTop: '10px'
+                  marginTop: '10px',
+                  opacity: 0,
+                  animation: 'fadeIn 0.4s ease-out 0.2s forwards'
                 }}>
                   <div style={{
                     fontSize: '10px',
@@ -577,154 +780,329 @@ export default function BattleScreen() {
             </div>
           ) : (
             <div style={{
-              color: 'rgba(255, 255, 255, 0.5)',
+              background: 'rgba(0, 0, 0, 0.6)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '8px',
+              color: 'rgba(255, 255, 255, 0.6)',
               fontFamily: "'Press Start 2P', monospace",
-              fontSize: '10px',
+              fontSize: '9px',
               textAlign: 'center',
-              padding: '15px'
+              padding: '20px 15px',
+              lineHeight: '1.8',
+              width: '100%',
+              minHeight: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              opacity: 0,
+              animation: 'fadeIn 0.3s ease-out forwards'
             }}>
-              Hover over a character to see their stats
+              <div style={{ marginBottom: '8px' }}>HOVER</div>
+              <div style={{ fontSize: '8px', lineHeight: '1.6' }}>
+                Over a character<br/>
+                to see stats
+              </div>
             </div>
           )}
         </div>
 
         <div className="div-espacio-monsters"></div>
           <div className="monsters-status-list">
-            {monstersStatus?.map((status: any, index: number) => (
-              <div 
-                key={status.character_id} 
-                className="character-wrapper"
-                ref={(el) => {
-                  if (status.character_id) {
-                    monstersRefs.current[status.character_id] = el
-                  }
-                }}
-              >
-                <img
-                  src={`/characters/character_${status.character_id}_${
-                    characterAnimations[status.character_id] === 'hit' ? 'hit' :
-                    characterAnimations[status.character_id] === 'dmg' ? 'dmg' :
-                    'idle'
-                  }.gif`}
-                  alt={`Monster ${status.character_id}`}
-                  onClick={() => !loading && handleMonsterClick(index)}
-                  onMouseEnter={() => setHoveredCharacter({ status, isMonster: true })}
-                  onMouseLeave={() => setHoveredCharacter(null)}
-                  style={{
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    pointerEvents: loading ? 'none' : 'auto'
+            {monstersStatus?.map((status: any, index: number) => {
+              // Check if this monster should be highlighted (when selecting skill that targets enemies)
+              const shouldHighlight = selectionStep === 'enemy' && selectedSkillId !== null && isSkillForEnemies(selectedSkillId)
+              
+              return (
+                <div 
+                  key={status.character_id} 
+                  className="character-wrapper"
+                  ref={(el) => {
+                    if (status.character_id) {
+                      monstersRefs.current[status.character_id] = el
+                    }
                   }}
-                />
-                <div className="hp-bar-container">
-                  <span className="hp-label">HP</span>
-                  <div className="hp-bar-bg">
-                    <div
-                      className="hp-bar-fill"
+                >
+                  <div 
+                    className={shouldHighlight ? 'character-glow-red' : ''}
+                    style={{ position: 'relative', display: 'inline-block' }}
+                  >
+                    <img
+                      src={`/characters/character_${status.character_id}_${
+                        characterAnimations[status.character_id] === 'hit' ? 'hit' :
+                        characterAnimations[status.character_id] === 'dmg' ? 'dmg' :
+                        'idle'
+                      }.gif`}
+                      alt={`Monster ${status.character_id}`}
+                      onClick={() => !loading && handleMonsterClick(index)}
+                      onMouseEnter={() => setHoveredCharacter({ status, isMonster: true })}
+                      onMouseLeave={() => setHoveredCharacter(null)}
                       style={{
-                        width: `${
-                          status.max_hp && status.max_hp > 0
-                            ? (status.current_hp / status.max_hp) * 100
-                            : 0
-                        }%`
+                        cursor: loading ? 'not-allowed' : 'pointer',
+                        pointerEvents: loading ? 'none' : 'auto',
+                        position: 'relative',
+                        zIndex: 2
                       }}
                     />
-                    <span className="hp-text">
-                      {status.current_hp || 0}/{status.max_hp || 0}
-                    </span>
                   </div>
-                </div>
+            <div className="hp-bar-container">
+              <span className="hp-label">HP</span>
+              <div className="hp-bar-bg">
+                <div
+                  className="hp-bar-fill"
+                  style={{
+                    width: `${
+                      status.max_hp && status.max_hp > 0
+                        ? (status.current_hp / status.max_hp) * 100
+                        : 0
+                    }%`
+                  }}
+                />
+                <span className="hp-text">
+                  {status.current_hp || 0}/{status.max_hp || 0}
+                </span>
               </div>
-            ))}
+            </div>
+              </div>
+              )
+            })}
           </div>
         </div>
 
         {/* BOTTOM: Heroes + skills */}
         <div className="contenedor-bottom">
           <div className="heroes-status-list">
-            {heroesStatus?.map((status: any, index: number) => (
-              <div 
-                key={status.character_id} 
-                className="character-wrapper"
-                ref={(el) => {
-                  if (status.character_id) {
-                    heroesRefs.current[status.character_id] = el
-                  }
-                }}
-              >
-                <img
-                  src={`/characters/character_${status.character_id}_${
-                    characterAnimations[status.character_id] === 'hit' ? 'hit' :
-                    characterAnimations[status.character_id] === 'dmg' ? 'dmg' :
-                    'idle'
-                  }.gif`}
-                  alt={`Hero ${status.character_id}`}
-                  onClick={() => !loading && handleHeroClick(index)}
-                  onMouseEnter={() => setHoveredCharacter({ status, isMonster: false })}
-                  onMouseLeave={() => setHoveredCharacter(null)}
-                  style={{
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    pointerEvents: loading ? 'none' : 'auto'
+            {heroesStatus?.map((status: any, index: number) => {
+              // Check if this hero should be highlighted
+              const isSelectedHero = selectedHeroIndex === index
+              const shouldHighlightAsTarget = selectionStep === 'ally' && selectedSkillId !== null && isSkillForAllies(selectedSkillId)
+              const hasAction = heroActions[index] !== undefined
+              
+              return (
+                <div 
+                  key={status.character_id} 
+                  className="character-wrapper"
+                  ref={(el) => {
+                    if (status.character_id) {
+                      heroesRefs.current[status.character_id] = el
+                    }
                   }}
-                />
-                <div className="hp-bar-container">
-                  <span className="hp-label">HP</span>
-                  <div className="hp-bar-bg">
-                    <div
-                      className="hp-bar-fill"
+                >
+                   {!hasAction && (
+                    <div className="action-text-glow">
+                      ACTION
+                    </div>
+                  )}
+                  <div 
+                    className={(isSelectedHero || shouldHighlightAsTarget) ? 'character-glow-white' : ''}
+                    style={{ position: 'relative', display: 'inline-block' }}
+                  >
+                    <img
+                      src={`/characters/character_${status.character_id}_${
+                        characterAnimations[status.character_id] === 'hit' ? 'hit' :
+                        characterAnimations[status.character_id] === 'dmg' ? 'dmg' :
+                        'idle'
+                      }.gif`}
+                      alt={`Hero ${status.character_id}`}
+                      onClick={() => {
+                        if (!loading && selectionStep === 'hero') {
+                          handleHeroClick(index)
+                        } else if (!loading && selectionStep === 'ally') {
+                          handleAllyClick(index)
+                        }
+                      }}
+                      onMouseEnter={() => setHoveredCharacter({ status, isMonster: false })}
+                      onMouseLeave={() => setHoveredCharacter(null)}
                       style={{
-                        width: `${
-                          status.max_hp && status.max_hp > 0
-                            ? (status.current_hp / status.max_hp) * 100
-                            : 0
-                        }%`
+                        cursor: loading ? 'not-allowed' : (selectionStep === 'hero' || (selectionStep === 'ally' && !hasAction)) ? 'pointer' : 'default',
+                        pointerEvents: loading ? 'none' : 'auto',
+                        position: 'relative',
+                        zIndex: 2
                       }}
                     />
-                    <span className="hp-text">
-                      {status.current_hp || 0}/{status.max_hp || 0}
-                    </span>
+      </div>
+            <div className="hp-bar-container">
+              <span className="hp-label">HP</span>
+              <div className="hp-bar-bg">
+                <div
+                  className="hp-bar-fill"
+                  style={{
+                    width: `${
+                      status.max_hp && status.max_hp > 0
+                        ? (status.current_hp / status.max_hp) * 100
+                        : 0
+                    }%`
+                  }}
+                />
+                <span className="hp-text">
+                  {status.current_hp || 0}/{status.max_hp || 0}
+                </span>
+              </div>
+            </div>
+                </div>
+              )
+            })}
+          </div>
+          <div className="div-espacio-skills" style={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            paddingRight: '10px',
+            paddingLeft: '10px',
+            paddingTop: '20px',
+            paddingBottom: '20px'
+          }}> 
+            {/* Always visible info box - now contains everything */}
+            <div style={{
+              background: 'rgba(0, 0, 0, 0.85)',
+              border: '2px solid rgba(78, 205, 196, 0.5)',
+              borderRadius: '8px',
+              padding: '15px',
+              width: '100%',
+              minHeight: '100%',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '15px',
+              justifyContent: selectionStep === 'skill' ? 'flex-start' : 'center',
+              opacity: 0,
+              animation: 'fadeIn 0.3s ease-out forwards'
+            }}>
+              {selectionStep === 'hero' && (
+                <div style={{
+                  color: '#4ecdc4',
+                  fontFamily: "'Press Start 2P', monospace",
+                  fontSize: '10px',
+                  textAlign: 'center',
+                  lineHeight: '1.6',
+                  width: '100%'
+                }}>
+                  <div style={{ marginBottom: '8px', fontSize: '11px', textDecoration: 'underline' }}>
+                    CHOOSE A HERO
+                  </div>
+                  <div style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '9px' }}>
+                    Click on a hero to execute their action
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-          <div className="div-espacio-skills"> 
-            {/* Add skill buttons, for now only test buttons using the css skill-icon skills-buttons-container skills-buttons */}(
-              <div className="skills-buttons-container">
-                <button 
-                  className="skill-icon" 
-                  onClick={() => !loading && handleSkillClick(1)}
-                  disabled={loading}
-                  style={{
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    opacity: loading ? 0.5 : 1
-                  }}
-                >
-                  1
-                </button>
-                <button 
-                  className="skill-icon" 
-                  onClick={() => !loading && handleSkillClick(2)}
-                  disabled={loading}
-                  style={{
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    opacity: loading ? 0.5 : 1
-                  }}
-                >
-                  2
-                </button>
-                <button 
-                  className="skill-icon" 
-                  onClick={() => !loading && handleSkillClick(3)}
-                  disabled={loading}
-                  style={{
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    opacity: loading ? 0.5 : 1
-                  }}
-                >
-                  3
-                </button>
-              </div>
-            )
+              )}
+              
+              {selectionStep === 'skill' && selectedHeroSkills.length > 0 && (
+                <div style={{
+                  color: '#4ecdc4',
+                  fontFamily: "'Press Start 2P', monospace",
+                  fontSize: '10px',
+                  textAlign: 'center',
+                  lineHeight: '1.6',
+                  flexShrink: 0
+                }}>
+                  <div style={{ marginBottom: '8px', fontSize: '11px', textDecoration: 'underline' }}>
+                    CHOOSE A SKILL
+                  </div>
+                  <div style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '9px' }}>
+                    Select a skill from the available ones below
+                  </div>
+                </div>
+              )}
+              
+              {selectionStep === 'enemy' && selectedSkillId !== null && (
+                <div style={{
+                  color: '#ff6b6b',
+                  fontFamily: "'Press Start 2P', monospace",
+                  fontSize: '10px',
+                  textAlign: 'center',
+                  lineHeight: '1.6',
+                  width: '100%'
+                }}>
+                  <div style={{ marginBottom: '8px', fontSize: '11px', textDecoration: 'underline' }}>
+                    CHOOSE AN ENEMY
+                  </div>
+                  <div style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '9px' }}>
+                    Click on an enemy to target with your selected skill
+                  </div>
+                </div>
+              )}
+              
+              {selectionStep === 'ally' && selectedSkillId !== null && (
+                <div style={{
+                  color: '#51cf66',
+                  fontFamily: "'Press Start 2P', monospace",
+                  fontSize: '10px',
+                  textAlign: 'center',
+                  lineHeight: '1.6',
+                  width: '100%'
+                }}>
+                  <div style={{ marginBottom: '8px', fontSize: '11px', textDecoration: 'underline' }}>
+                    CHOOSE AN ALLY
+                  </div>
+                  <div style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '9px' }}>
+                    Click on an ally to target with your selected skill
+                  </div>
+                </div>
+              )}
+              
+              {/* Skills buttons - shown when selecting skill, now inside the box */}
+              {selectionStep === 'skill' && selectedHeroSkills.length > 0 && (
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                  flex: 1,
+                  overflowY: 'auto',
+                  opacity: 0,
+                  transform: 'translateX(-20px)',
+                  animation: 'fadeInSlideRight 0.3s ease-out 0.2s forwards'
+                }}>
+                {selectedHeroSkills.map((skillId) => {
+                  const skill = getSkillById(skillId)
+                  if (!skill) return null
+                  const isSelected = selectedSkillId === skillId
+                  
+                  return (
+                    <button 
+                      key={skillId}
+                      onClick={() => !loading && handleSkillClick(skillId)}
+                      disabled={loading || selectionStep !== 'skill'}
+                      style={{
+                        cursor: loading || selectionStep !== 'skill' ? 'not-allowed' : 'pointer',
+                        opacity: loading ? 0.5 : 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        padding: '12px 20px',
+                        width: '100%',
+                        background: isSelected ? 'rgba(78, 205, 196, 0.2)' : 'rgba(44, 62, 80, 0.9)',
+                        border: isSelected ? '2px solid #4ecdc4' : '2px solid rgba(255, 255, 255, 0.3)',
+                        borderRadius: '8px',
+                        boxShadow: isSelected ? '0 0 15px rgba(78, 205, 196, 0.7)' : '0 3px 8px rgba(0,0,0,0.5)',
+                        transition: 'all 0.2s ease-in-out'
+                      }}
+                    >
+                      <div style={{ 
+                        color: '#fff', 
+                        marginBottom: '4px',
+                        fontFamily: "'Press Start 2P', monospace",
+                        fontSize: '10px',
+                        lineHeight: '1.4'
+                      }}>
+                        {skill.name}
+                      </div>
+                      <div style={{ 
+                        color: 'rgba(255, 255, 255, 0.7)', 
+                        fontSize: '8px',
+                        fontFamily: "'Press Start 2P', monospace",
+                        lineHeight: '1.4'
+                      }}>
+                        {skill.description}
+                      </div>
+                    </button>
+                  )
+                })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
