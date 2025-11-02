@@ -5,7 +5,6 @@
 **Full Game**
 
 ### Project Summary
-> Give a short summary of your game project.
 
 **DESTINY** is a fully on-chain turn-based RPG battle game built on **Starknet** using the **Dojo framework**. The game combines classic strategic RPG mechanics with blockchain capabilities, offering a decentralized gaming experience where all actions are recorded on-chain.
 
@@ -22,12 +21,9 @@
 
 The game features a complete progression system, balanced combat mechanics, and polished UI/UX with visual and audio feedback for every action.
 
-### GitHub
-> Provide the GitHub where your project is hosted. Please ensure your github repo is registered with [OnlyDust](https://app.onlydust.com/p/create) to receive awards.
-https://github.com/[your-username]/ded
+### Play Demo
 
-### Play
-> Provide instructions on how to play your game. It could be a URL, a README, or a link to a binary to install.
+https://dojo-destiny.vercel.app/
 
 #### Getting Started
 1. **Connect Your Wallet**: 
