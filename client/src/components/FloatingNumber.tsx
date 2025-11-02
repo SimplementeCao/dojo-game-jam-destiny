@@ -9,6 +9,7 @@ interface FloatingNumberProps {
   onComplete?: () => void
   critical?: boolean
   label?: string // Texto adicional arriba del número (ej: "Critical Hit!")
+  victory?: boolean // Para mensajes de victoria más grandes
 }
 
 /**
@@ -22,7 +23,8 @@ export default function FloatingNumber({
   duration = 1500,
   onComplete,
   critical = false,
-  label
+  label,
+  victory = false
 }: FloatingNumberProps) {
   const [opacity, setOpacity] = useState(1)
   const [translateY, setTranslateY] = useState(0)
@@ -74,9 +76,11 @@ export default function FloatingNumber({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Solo ejecutar una vez al montar
 
-  const fontSize = critical ? '48px' : '36px'
-  const fontWeight = critical ? '900' : '700'
-  const textShadow = critical 
+  const fontSize = victory ? '72px' : (critical ? '48px' : '36px')
+  const fontWeight = victory ? '900' : (critical ? '900' : '700')
+  const textShadow = victory
+    ? '0 0 20px currentColor, 0 0 40px currentColor, 0 0 60px currentColor, 4px 4px 8px rgba(0,0,0,0.9)'
+    : critical 
     ? '0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor, 2px 2px 4px rgba(0,0,0,0.8)'
     : '2px 2px 4px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.6)'
 

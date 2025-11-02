@@ -19,6 +19,7 @@ export default function LevelsScreen() {
   const { disconnect } = useDisconnect()
   const wasConnectedRef = useRef(false)
   const hasRedirectedRef = useRef(false)
+  const selectLvlSoundRef = useRef<HTMLAudioElement | null>(null)
   const { startBattle } = useGameActions();
 
   // Check progress for each level to determine unlocked level
@@ -26,6 +27,14 @@ export default function LevelsScreen() {
   const progress1 = useProgressData(playerAddress, 1)
   const progress2 = useProgressData(playerAddress, 2)
   const progress3 = useProgressData(playerAddress, 3)
+
+  // Initialize level selection sound
+  useEffect(() => {
+    if (!selectLvlSoundRef.current) {
+      selectLvlSoundRef.current = new Audio('/music/selectlvl.mp3')
+      selectLvlSoundRef.current.volume = 0.7
+    }
+  }, [])
 
   // Calculate unlocked level based on completed levels
   useEffect(() => {
@@ -79,6 +88,13 @@ export default function LevelsScreen() {
   }, [account, navigate])
 
   const handleSelect = async (level: LevelId) => {
+    // Play level selection sound effect
+    if (selectLvlSoundRef.current) {
+      selectLvlSoundRef.current.currentTime = 0
+      selectLvlSoundRef.current.play().catch(err => {
+        console.log('Error playing level selection sound:', err)
+      })
+    }
     let result = await startBattle(level);
     await new Promise(resolve => setTimeout(resolve, 1000));
     navigate(`/battle/${BigInt(result?.battle_id as string)}`)

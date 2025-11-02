@@ -13,6 +13,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   loading = false,
   connected = false
 }) => {
+
   return (
     <div className="pantalla-inicio pantalla-inicio-background">
       

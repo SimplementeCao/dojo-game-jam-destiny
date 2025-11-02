@@ -1,5 +1,5 @@
 import { useState, useEffect, createContext, useContext, useRef } from 'react'
-import { Routes, Route, useNavigate } from 'react-router-dom'
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { useAccount, useConnect } from '@starknet-react/core'
 import './App.css'
 import HomeScreen from './components/HomeScreen'
@@ -148,10 +148,19 @@ function Home() {
   
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const conectSoundRef = useRef<HTMLAudioElement | null>(null)
  
   // Estado de conexión de wallet
   const isConnected = !!account && status === 'connected'
   
+  // Initialize connection sound
+  useEffect(() => {
+    if (!conectSoundRef.current) {
+      conectSoundRef.current = new Audio('/music/conect.mp3')
+      conectSoundRef.current.volume = 0.7
+    }
+  }, [])
+
   // Debug: Log del estado de la wallet
   useEffect(() => {
   }, [account, address, status, isConnected, connectors.length])
@@ -159,6 +168,13 @@ function Home() {
   // Log y redirección cuando la wallet se conecta
   useEffect(() => {
     if (isConnected && account && address) {
+      // Play connection sound effect
+      if (conectSoundRef.current) {
+        conectSoundRef.current.currentTime = 0
+        conectSoundRef.current.play().catch(err => {
+          console.log('Error playing connection sound:', err)
+        })
+      }
       navigate('/levels')
     }
   }, [isConnected, account, address, status, navigate])
@@ -255,10 +271,59 @@ function Home() {
   )
 }
 
+// Componente para manejar música global según la ruta
+function MusicManager() {
+  const location = useLocation()
+  const homeMusicRef = useRef<HTMLAudioElement | null>(null)
+
+  useEffect(() => {
+    // Crear audio una sola vez
+    if (!homeMusicRef.current) {
+      homeMusicRef.current = new Audio('/music/homeMusic.mp3')
+      homeMusicRef.current.loop = true
+      homeMusicRef.current.volume = 0.5
+    }
+
+    const isBattleRoute = location.pathname.startsWith('/battle')
+    
+    if (isBattleRoute) {
+      // Pausar música de home cuando estamos en battle
+      if (homeMusicRef.current && !homeMusicRef.current.paused) {
+        homeMusicRef.current.pause()
+      }
+    } else {
+      // Reproducir música de home en Home y Levels
+      const playMusic = async () => {
+        try {
+          if (homeMusicRef.current && homeMusicRef.current.paused) {
+            await homeMusicRef.current.play()
+          }
+        } catch (error) {
+          console.log('Error playing home music:', error)
+        }
+      }
+      playMusic()
+    }
+  }, [location.pathname])
+
+  // Cleanup al desmontar
+  useEffect(() => {
+    return () => {
+      if (homeMusicRef.current) {
+        homeMusicRef.current.pause()
+        homeMusicRef.current.currentTime = 0
+      }
+    }
+  }, [])
+
+  return null
+}
+
 // Componente principal App con Router
 function App() {
   return (
     <AudioProvider>
+      <MusicManager />
       <div className="app-container">
         {/* Rutas */}
         <Routes>

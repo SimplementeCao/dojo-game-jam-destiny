@@ -16,6 +16,7 @@ interface FloatingAnimation {
   color: string
   critical?: boolean
   label?: string
+  victory?: boolean
 }
 
 export default function BattleScreen() {
@@ -40,6 +41,99 @@ export default function BattleScreen() {
   const heroesRefs = useRef<{ [key: number]: HTMLDivElement | null }>({})
   const monstersRefs = useRef<{ [key: number]: HTMLDivElement | null }>({})
   const hasCalledPlay = useRef<boolean>(false)
+  const battleMusicRef = useRef<HTMLAudioElement | null>(null)
+  
+  // Sound effects refs
+  const criticalHitSoundRef = useRef<HTMLAudioElement | null>(null)
+  const hitSoundRef = useRef<HTMLAudioElement | null>(null)
+  const healSoundRef = useRef<HTMLAudioElement | null>(null)
+  const buffSoundRef = useRef<HTMLAudioElement | null>(null)
+  const debuffSoundRef = useRef<HTMLAudioElement | null>(null)
+  const missSoundRef = useRef<HTMLAudioElement | null>(null)
+  const selectHeroeSoundRef = useRef<HTMLAudioElement | null>(null)
+  const victorySoundRef = useRef<HTMLAudioElement | null>(null)
+  
+  // State for victory overlay
+  const [showVictoryOverlay, setShowVictoryOverlay] = useState(false)
+
+  // Initialize and play battle music when battle starts
+  useEffect(() => {
+    if (!battle || !battle.id) {
+      return
+    }
+
+    // Create audio element if it doesn't exist
+    if (!battleMusicRef.current) {
+      battleMusicRef.current = new Audio('/music/battleMusic.mp3')
+      battleMusicRef.current.loop = true
+      battleMusicRef.current.volume = 0.5
+    }
+
+    // Initialize sound effects
+    if (!criticalHitSoundRef.current) {
+      criticalHitSoundRef.current = new Audio('/music/criticalhit.mp3')
+      criticalHitSoundRef.current.volume = 0.7
+    }
+    if (!hitSoundRef.current) {
+      hitSoundRef.current = new Audio('/music/hit.mp3')
+      hitSoundRef.current.volume = 0.7
+    }
+    if (!healSoundRef.current) {
+      healSoundRef.current = new Audio('/music/healing.mp3')
+      healSoundRef.current.volume = 0.7
+    }
+    if (!buffSoundRef.current) {
+      buffSoundRef.current = new Audio('/music/buff.mp3')
+      buffSoundRef.current.volume = 0.7
+    }
+    if (!debuffSoundRef.current) {
+      debuffSoundRef.current = new Audio('/music/debuff.mp3')
+      debuffSoundRef.current.volume = 0.7
+    }
+    if (!missSoundRef.current) {
+      missSoundRef.current = new Audio('/music/miss.mp3')
+      missSoundRef.current.volume = 0.7
+    }
+    if (!selectHeroeSoundRef.current) {
+      selectHeroeSoundRef.current = new Audio('/music/selectheroe.mp3')
+      selectHeroeSoundRef.current.volume = 0.7
+    }
+    if (!victorySoundRef.current) {
+      victorySoundRef.current = new Audio('/music/victory.mp3')
+      victorySoundRef.current.volume = 0.8
+    }
+
+    // Play music when battle is loaded
+    const playMusic = async () => {
+      try {
+        if (battleMusicRef.current) {
+          await battleMusicRef.current.play()
+        }
+      } catch (error) {
+        console.log('Error playing battle music:', error)
+      }
+    }
+
+    playMusic()
+
+    // Cleanup: pause music when component unmounts or battle ends
+    return () => {
+      if (battleMusicRef.current) {
+        battleMusicRef.current.pause()
+        battleMusicRef.current.currentTime = 0
+      }
+    }
+  }, [battle?.id])
+
+  // Helper function to play sound effects
+  const playSound = (soundRef: React.MutableRefObject<HTMLAudioElement | null>) => {
+    if (soundRef.current) {
+      soundRef.current.currentTime = 0 // Reset to start
+      soundRef.current.play().catch(err => {
+        console.log('Error playing sound effect:', err)
+      })
+    }
+  }
 
   // Load characterStatus for heroes and monsters
   useEffect(() => {
@@ -251,16 +345,26 @@ export default function BattleScreen() {
   }
 
   // Function to add a floating animation
-  const addFloatingAnimation = (value: string | number, x: number, y: number, color: string, critical = false, label?: string) => {
+  const addFloatingAnimation = (value: string | number, x: number, y: number, color: string, critical = false, label?: string, victory = false) => {
     const id = `anim-${Date.now()}-${Math.random()}`
-    const animation: FloatingAnimation = { id, value, x, y, color, critical, label }
+    const animation: FloatingAnimation = { id, value, x, y, color, critical, label, victory }
     
     setFloatingAnimations(prev => [...prev, animation])
+    
+    // If victory, show overlay and play sound
+    if (victory) {
+      setShowVictoryOverlay(true)
+      playSound(victorySoundRef)
+      // Hide overlay after animation
+      setTimeout(() => {
+        setShowVictoryOverlay(false)
+      }, 3000)
+    }
     
     // Remove animation after it ends
     setTimeout(() => {
       setFloatingAnimations(prev => prev.filter(a => a.id !== id))
-    }, 1000)
+    }, victory ? 3000 : 1000)
   }
  
   const handlePlay = async () => {
@@ -331,6 +435,17 @@ export default function BattleScreen() {
                   isCritical,
                   isCritical ? 'Critical Hit!' : undefined
                 )
+                
+                // Play sound effect
+                // hit.mp3 is used for Basic Attack (id: 1), Power Attack (id: 2), and Flame Attack (id: 3) when not critical
+                // criticalhit.mp3 is used for critical hits from any of these attacks
+                if (isCritical) {
+                  playSound(criticalHitSoundRef)
+                  playSound(hitSoundRef)
+                } else {
+                  // Basic Attack, Power Attack, and Flame Attack use hit.mp3
+                  playSound(hitSoundRef)
+                }
               }
             }
           } 
@@ -357,6 +472,8 @@ export default function BattleScreen() {
                   position.y,
                   '#4ecdc4' // Turquesa para buff
                 )
+                // Play buff sound effect
+                playSound(buffSoundRef)
               }
             }
           }
@@ -387,6 +504,8 @@ export default function BattleScreen() {
                   position.y,
                   '#9b59b6' // Púrpura para debuff
                 )
+                // Play debuff sound effect
+                playSound(debuffSoundRef)
               }
             }
           }
@@ -413,6 +532,8 @@ export default function BattleScreen() {
                   position.y,
                   '#51cf66' // Verde para heal
                 )
+                // Play heal sound effect
+                playSound(healSoundRef)
               }
             }
           }
@@ -438,6 +559,8 @@ export default function BattleScreen() {
                   position.y,
                   '#ffd43b' // Amarillo para miss
                 )
+                // Play miss sound effect
+                playSound(missSoundRef)
               }
             }
           }
@@ -449,7 +572,10 @@ export default function BattleScreen() {
               'VICTORY!',
               centerX,
               centerY,
-              '#51cf66' // Green for victory
+              '#51cf66', // Green for victory
+              true, // critical (makes it bigger)
+              undefined,
+              true // victory (triggers overlay and sound)
             )
           }
           else if (event.key === "PlayerLoseEvent") {
@@ -529,6 +655,8 @@ export default function BattleScreen() {
     if (heroActions[heroIndex] !== undefined) {
       return
     }
+    // Play select hero sound effect
+    playSound(selectHeroeSoundRef)
     // 100 * index (skill and target come later)
     const heroNum = heroIndex * 100;
     setTempAction(heroNum);
@@ -538,6 +666,8 @@ export default function BattleScreen() {
 
   const handleSkillClick = (skillIndex: number) => {
     if (selectionStep !== 'skill') return;
+    // Play select sound effect
+    playSound(selectHeroeSoundRef)
     setTempAction(prev => {
       // prev is a number (e.g. H00), add skill as ones digit
       const num = prev + skillIndex;
@@ -558,6 +688,9 @@ export default function BattleScreen() {
   const handleMonsterClick = (monsterIndex: number) => {
     if (selectionStep !== 'enemy') return;
     if (selectedHeroIndex === null) return;
+    
+    // Play select sound effect
+    playSound(selectHeroeSoundRef)
     
     setTempAction(prev => {
       // prev is Hero+Skill, add monsterIndex * 10 to get full action number
@@ -899,11 +1032,29 @@ export default function BattleScreen() {
             color={animation.color}
             critical={animation.critical}
             label={animation.label}
+            victory={animation.victory}
             onComplete={() => {
               setFloatingAnimations(prev => prev.filter(a => a.id !== animation.id))
             }}
           />
         ))}
+        
+        {/* Victory overlay - darkens background */}
+        {showVictoryOverlay && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
+              zIndex: 9999,
+              pointerEvents: 'none',
+              transition: 'opacity 0.5s ease-in-out'
+            }}
+          />
+        )}
 
         {/* Loading indicator */}
         {loading && (
