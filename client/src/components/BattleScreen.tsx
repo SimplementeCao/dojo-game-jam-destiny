@@ -17,6 +17,7 @@ interface FloatingAnimation {
   critical?: boolean
   label?: string
   victory?: boolean
+  gameOver?: boolean
 }
 
 export default function BattleScreen() {
@@ -37,6 +38,7 @@ export default function BattleScreen() {
   // Track selected hero and skill for highlighting
   const [selectedHeroIndex, setSelectedHeroIndex] = useState<number | null>(null)
   const [selectedSkillId, setSelectedSkillId] = useState<number | null>(null)
+  const [isNavigating, setIsNavigating] = useState(false)
   const loadAllStatuses = useRef<(() => Promise<void>) | null>(null)
   const heroesRefs = useRef<{ [key: number]: HTMLDivElement | null }>({})
   const monstersRefs = useRef<{ [key: number]: HTMLDivElement | null }>({})
@@ -53,8 +55,9 @@ export default function BattleScreen() {
   const selectHeroeSoundRef = useRef<HTMLAudioElement | null>(null)
   const victorySoundRef = useRef<HTMLAudioElement | null>(null)
   
-  // State for victory overlay
+  // State for victory overlay and game over
   const [showVictoryOverlay, setShowVictoryOverlay] = useState(false)
+  const [showGameOver, setShowGameOver] = useState(false)
 
   // Initialize and play battle music when battle starts
   useEffect(() => {
@@ -345,26 +348,35 @@ export default function BattleScreen() {
   }
 
   // Function to add a floating animation
-  const addFloatingAnimation = (value: string | number, x: number, y: number, color: string, critical = false, label?: string, victory = false) => {
+  const addFloatingAnimation = (value: string | number, x: number, y: number, color: string, critical = false, label?: string, victory = false, gameOver = false) => {
     const id = `anim-${Date.now()}-${Math.random()}`
-    const animation: FloatingAnimation = { id, value, x, y, color, critical, label, victory }
+    const animation: FloatingAnimation = { id, value, x, y, color, critical, label, victory, gameOver }
     
     setFloatingAnimations(prev => [...prev, animation])
     
-    // If victory, show overlay and play sound
-    if (victory) {
+    // If victory or game over, show overlay and play sound
+    if (victory || gameOver) {
       setShowVictoryOverlay(true)
-      playSound(victorySoundRef)
+      if (gameOver) {
+        setShowGameOver(true)
+      }
+      if (victory) {
+        playSound(victorySoundRef)
+      }
       // Hide overlay after animation
+      // GameOver: 7 seconds (4 + 3 extra)
+      // Victory: 4 seconds
+      const overlayDuration = gameOver ? 7000 : 4000
       setTimeout(() => {
         setShowVictoryOverlay(false)
-      }, 3000)
+        setShowGameOver(false)
+      }, overlayDuration)
     }
     
     // Remove animation after it ends
     setTimeout(() => {
       setFloatingAnimations(prev => prev.filter(a => a.id !== id))
-    }, victory ? 3000 : 1000)
+    }, gameOver ? 7000 : (victory ? 4000 : 1000))
   }
  
   const handlePlay = async () => {
@@ -568,25 +580,50 @@ export default function BattleScreen() {
             // Animation in the center of the screen
             const centerX = window.innerWidth / 2
             const centerY = window.innerHeight / 2
-            addFloatingAnimation(
-              'VICTORY!',
-              centerX,
-              centerY,
-              '#51cf66', // Green for victory
-              true, // critical (makes it bigger)
-              undefined,
-              true // victory (triggers overlay and sound)
-            )
+            
+            // Check if this is the last level (level 3) - show GAME OVER
+            const isLastLevel = battle?.level === 3
+            
+            if (isLastLevel) {
+              // Game Over - All levels completed (green)
+              addFloatingAnimation(
+                'GAME OVER',
+                centerX,
+                centerY,
+                '#51cf66', // Green for victory
+                true, // critical (makes it bigger)
+                undefined,
+                true, // victory (triggers overlay and sound)
+                true // gameOver
+              )
+            } else {
+              // Regular victory
+              addFloatingAnimation(
+                'VICTORY!',
+                centerX,
+                centerY,
+                '#51cf66', // Green for victory
+                true, // critical (makes it bigger)
+                undefined,
+                true // victory (triggers overlay and sound)
+              )
+            }
           }
           else if (event.key === "PlayerLoseEvent") {
             // Animation in the center of the screen
             const centerX = window.innerWidth / 2
             const centerY = window.innerHeight / 2
+            
+            // Game Over - All heroes died (red)
             addFloatingAnimation(
-              'DEFEAT',
+              'GAME OVER',
               centerX,
               centerY,
-              '#ff3333' // Red for defeat
+              '#ff3333', // Red for defeat
+              true, // critical (makes it bigger)
+              undefined,
+              false, // not victory
+              true // gameOver
             )
           }
         }, i * 1000) // 1000ms delay between each animation
@@ -616,6 +653,7 @@ export default function BattleScreen() {
       // If game ended (win or lose), redirect after all animations + delay
       if (hasGameEndEvent) {
         setTimeout(() => {
+          setIsNavigating(true)
           navigate('/levels')
         }, timeUntilAllAnimationsEnd + redirectDelay)
       }
@@ -740,7 +778,15 @@ export default function BattleScreen() {
 
 
   return (
-    <div className={`escenario-root ${battle?.level}`}>
+    <div 
+      className={`escenario-root ${battle?.level || ''}`}
+      style={battle?.level ? {
+        backgroundImage: `url('/backgrounds/battle${battle.level}.jpeg')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      } : undefined}
+    >
       <div className="contenedor-todo">
         {/* TOP: Monsters infoskills */}
         <div className="contenedor-top">
@@ -825,28 +871,38 @@ export default function BattleScreen() {
                     }
                   }}
                 >
-                  <div 
-                    className={shouldHighlight ? 'character-glow-red' : ''}
-                    style={{ position: 'relative', display: 'inline-block' }}
-                  >
-                    <img
-                      src={`/characters/character_${status.character_id}_${
-                        characterAnimations[status.character_id] === 'hit' ? 'hit' :
-                        characterAnimations[status.character_id] === 'dmg' ? 'dmg' :
-                        'idle'
-                      }.gif`}
-                      alt={`Monster ${status.character_id}`}
-                      onClick={() => !loading && handleMonsterClick(index)}
-                      onMouseEnter={() => setHoveredCharacter({ status, isMonster: true })}
-                      onMouseLeave={() => setHoveredCharacter(null)}
-                      style={{
-                        cursor: loading ? 'not-allowed' : 'pointer',
-                        pointerEvents: loading ? 'none' : 'auto',
-                        position: 'relative',
-                        zIndex: 2
-                      }}
-                    />
-                  </div>
+                <div 
+                  className={shouldHighlight ? 'character-glow-red' : ''}
+                  style={{ position: 'relative', display: 'inline-block' }}
+                >
+                  {/* Arrow indicator above enemy when selecting target */}
+                  {selectionStep === 'enemy' && selectedSkillId !== null && isSkillForEnemies(selectedSkillId) && (
+                    <div className="enemy-arrow-indicator">
+                      <img
+                        src="/arr.png"
+                        alt="Arrow indicator"
+                        className="enemy-arrow-image"
+                      />
+                    </div>
+                  )}
+                  <img
+                    src={`/characters/character_${status.character_id}_${
+                      characterAnimations[status.character_id] === 'hit' ? 'hit' :
+                      characterAnimations[status.character_id] === 'dmg' ? 'dmg' :
+                      'idle'
+                    }.gif`}
+                    alt={`Monster ${status.character_id}`}
+                    onClick={() => !loading && handleMonsterClick(index)}
+                    onMouseEnter={() => setHoveredCharacter({ status, isMonster: true })}
+                    onMouseLeave={() => setHoveredCharacter(null)}
+                    style={{
+                      cursor: loading ? 'not-allowed' : 'pointer',
+                      pointerEvents: loading ? 'none' : 'auto',
+                      position: 'relative',
+                      zIndex: 2
+                    }}
+                  />
+                </div>
             <div className="hp-bar-container">
               <span className="hp-label">HP</span>
               <div className="hp-bar-bg">
@@ -1032,51 +1088,70 @@ export default function BattleScreen() {
             color={animation.color}
             critical={animation.critical}
             label={animation.label}
-            victory={animation.victory}
+            victory={animation.victory || animation.gameOver}
+            gameOver={animation.gameOver}
             onComplete={() => {
               setFloatingAnimations(prev => prev.filter(a => a.id !== animation.id))
             }}
           />
         ))}
         
-        {/* Victory overlay - darkens background */}
-        {showVictoryOverlay && (
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.4)',
-              zIndex: 9999,
-              pointerEvents: 'none',
-              transition: 'opacity 0.5s ease-in-out'
-            }}
-          />
+        {/* Victory/Game Over overlay - darkens background */}
+        {(showVictoryOverlay || showGameOver) && (
+          <>
+            <div
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 9999,
+                pointerEvents: 'none',
+                transition: 'opacity 0.5s ease-in-out'
+              }}
+            />
+          </>
         )}
 
         {/* Loading indicator */}
-        {loading && (
-          <div
-            style={{
-              position: 'fixed',
-              bottom: '50%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              zIndex: 10001,
-              pointerEvents: 'none'
-            }}
-          >
-            <img
-              src="/loading.gif"
-              alt="Loading..."
+        {(loading || isNavigating) && (
+          <>
+            {/* Dark overlay - 30% opacity */}
+            <div
               style={{
-                width: '150px',
-                height: '150px',
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                zIndex: 10000,
+                pointerEvents: 'none'
               }}
             />
-          </div>
+            {/* Loading gif */}
+            <div
+              style={{
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                zIndex: 10001,
+                pointerEvents: 'none'
+              }}
+            >
+              <img
+                src="/loading.gif"
+                alt="Loading..."
+                style={{
+                  width: '150px',
+                  height: '150px',
+                }}
+              />
+            </div>
+          </>
         )}
       </div>
     </div>

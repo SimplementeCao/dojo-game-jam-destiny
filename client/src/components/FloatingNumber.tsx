@@ -10,6 +10,7 @@ interface FloatingNumberProps {
   critical?: boolean
   label?: string // Texto adicional arriba del número (ej: "Critical Hit!")
   victory?: boolean // Para mensajes de victoria más grandes
+  gameOver?: boolean // Para mensajes de game over (dura más tiempo)
 }
 
 /**
@@ -20,12 +21,15 @@ export default function FloatingNumber({
   x,
   y,
   color,
-  duration = 1500,
+  duration,
   onComplete,
   critical = false,
   label,
-  victory = false
+  victory = false,
+  gameOver = false
 }: FloatingNumberProps) {
+  // Calculate duration: gameOver = 7000ms, victory = 4000ms, default = 1500ms
+  const animationDuration = duration !== undefined ? duration : (gameOver ? 7000 : (victory ? 4000 : 1500))
   const [opacity, setOpacity] = useState(1)
   const [translateY, setTranslateY] = useState(0)
   const onCompleteRef = useRef(onComplete)
@@ -39,7 +43,6 @@ export default function FloatingNumber({
   // Iniciar la animación solo una vez cuando el componente se monta
   useEffect(() => {
     const startTime = Date.now()
-    const animationDuration = duration
 
     const animate = () => {
       const elapsed = Date.now() - startTime
@@ -76,10 +79,10 @@ export default function FloatingNumber({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Solo ejecutar una vez al montar
 
-  const fontSize = victory ? '72px' : (critical ? '48px' : '36px')
+  const fontSize = victory ? '96px' : (critical ? '48px' : '36px')
   const fontWeight = victory ? '900' : (critical ? '900' : '700')
   const textShadow = victory
-    ? '0 0 20px currentColor, 0 0 40px currentColor, 0 0 60px currentColor, 4px 4px 8px rgba(0,0,0,0.9)'
+    ? '0 0 30px currentColor, 0 0 60px currentColor, 0 0 90px currentColor, 0 0 120px currentColor, 6px 6px 12px rgba(0,0,0,0.9)'
     : critical 
     ? '0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor, 2px 2px 4px rgba(0,0,0,0.8)'
     : '2px 2px 4px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.6)'

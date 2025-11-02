@@ -15,6 +15,7 @@ const LEVEL_DIFFICULTIES: Record<LevelId, string> = {
 export default function LevelsScreen() {
   const navigate = useNavigate()
   const [unlocked, setUnlocked] = useState<LevelId>()
+  const [isNavigating, setIsNavigating] = useState(false)
   const { account } = useAccount()
   const { disconnect } = useDisconnect()
   const wasConnectedRef = useRef(false)
@@ -95,6 +96,8 @@ export default function LevelsScreen() {
         console.log('Error playing level selection sound:', err)
       })
     }
+    // Show loading
+    setIsNavigating(true)
     let result = await startBattle(level);
     await new Promise(resolve => setTimeout(resolve, 1000));
     navigate(`/battle/${BigInt(result?.battle_id as string)}`)
@@ -106,6 +109,45 @@ export default function LevelsScreen() {
 
   return (
     <div className="levels-screen" aria-label="Levels">
+      {/* Loading indicator during navigation */}
+      {isNavigating && (
+        <>
+          {/* Dark overlay - 30% opacity */}
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.3)',
+              zIndex: 10000,
+              pointerEvents: 'none'
+            }}
+          />
+          {/* Loading gif */}
+          <div
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 10001,
+              pointerEvents: 'none'
+            }}
+          >
+            <img
+              src="/loading.gif"
+              alt="Loading..."
+              style={{
+                width: '150px',
+                height: '150px',
+              }}
+            />
+          </div>
+        </>
+      )}
+      
       {/* Status badge top-right */}
       <div className="status-badge">
         <div className={`status-line ${account ? 'ok' : 'warn'}`}>
@@ -124,14 +166,19 @@ export default function LevelsScreen() {
       <div className="levels-grid">
         {TOTAL_LEVELS.map((lv) => {
           const locked = lv > (unlocked ?? 1)
-          const cardImage = `/backgrounds/card${lv}.${lv === 3 ? 'webp' : 'png'}`
+          // Card images: level 1 uses card1.jpeg, level 2 uses card2.png, level 3 uses card3.webp
+          const cardImage = lv === 1
+            ? `/backgrounds/card1.jpeg`
+            : lv === 2
+            ? `/backgrounds/card2.png`
+            : `/backgrounds/card3.webp`
           return (
             <button
               key={lv}
               className={`level-card level-card-${lv} ${locked ? 'locked' : 'unlocked'}`}
               onClick={() => handleSelect(lv)}
               aria-label={`Level ${lv}${locked ? ' (locked)' : ''}`}
-              disabled={locked}
+              disabled={locked || isNavigating}
               style={{ backgroundImage: `url(${cardImage})` }}
             >
               <div className={`level-difficulty level-difficulty-${LEVEL_DIFFICULTIES[lv].toLowerCase()}`}>

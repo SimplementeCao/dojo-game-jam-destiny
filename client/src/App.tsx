@@ -148,6 +148,7 @@ function Home() {
   
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isNavigating, setIsNavigating] = useState(false)
   const conectSoundRef = useRef<HTMLAudioElement | null>(null)
  
   // Estado de conexión de wallet
@@ -175,7 +176,11 @@ function Home() {
           console.log('Error playing connection sound:', err)
         })
       }
-      navigate('/levels')
+      // Show loading and navigate
+      setIsNavigating(true)
+      setTimeout(() => {
+        navigate('/levels')
+      }, 500)
     }
   }, [isConnected, account, address, status, navigate])
 
@@ -230,35 +235,50 @@ function Home() {
 
   return (
     <>
+      {/* Loading indicator during navigation */}
+      {isNavigating && (
+        <>
+          {/* Dark overlay - 30% opacity */}
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.3)',
+              zIndex: 10000,
+              pointerEvents: 'none'
+            }}
+          />
+          {/* Loading gif */}
+          <div
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 10001,
+              pointerEvents: 'none'
+            }}
+          >
+            <img
+              src="/loading.gif"
+              alt="Loading..."
+              style={{
+                width: '150px',
+                height: '150px',
+              }}
+            />
+          </div>
+        </>
+      )}
+
       {/* Mostrar errores */}
       {displayError && (
         <div className="error-message">
           {displayError}
           <button onClick={() => setError(null)}>×</button>
-        </div>
-      )}
-      
-      {/* Debug: Mostrar estado de wallet en desarrollo */}
-      {process.env.NODE_ENV === 'development' && (
-        <div style={{
-          position: 'fixed',
-          top: '10px',
-          right: '10px',
-          background: 'rgba(0,0,0,0.7)',
-          color: 'white',
-          padding: '10px',
-          borderRadius: '5px',
-          fontSize: '12px',
-          zIndex: 9999
-        }}>
-          <div>Wallet: {isConnected ? '✅ Connected' : '❌ Not Connected'}</div>
-          <div>Status: {status}</div>
-          {isConnected && connectors.length > 0 && (
-            <div>Wallet Name: {connectors[0].name || connectors[0].id || 'Unknown'}</div>
-          )}
-          {address && !isConnected && (
-            <div>Address: {address.slice(0, 6)}...{address.slice(-4)}</div>
-          )}
         </div>
       )}
       
