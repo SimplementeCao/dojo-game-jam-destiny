@@ -2,7 +2,7 @@ import type { SchemaType as ISchemaType } from "@dojoengine/sdk";
 
 import { BigNumberish } from 'starknet';
 
-// Type definition for `destiny::models::Battle` struct
+// Type definition for `destiny2::models::Battle` struct
 export interface Battle {
 	id: BigNumberish;
 	level: BigNumberish;
@@ -12,7 +12,7 @@ export interface Battle {
 	is_finished: boolean;
 }
 
-// Type definition for `destiny::models::Character` struct
+// Type definition for `destiny2::models::Character` struct
 export interface Character {
 	id: BigNumberish;
 	name: string;
@@ -24,7 +24,7 @@ export interface Character {
 	evasion: BigNumberish;
 }
 
-// Type definition for `destiny::models::CharacterStatus` struct
+// Type definition for `destiny2::models::CharacterStatus` struct
 export interface CharacterStatus {
 	battle_id: BigNumberish;
 	character_id: BigNumberish;
@@ -35,38 +35,38 @@ export interface CharacterStatus {
 	evasion: BigNumberish;
 }
 
-// Type definition for `destiny::models::CurrentBattle` struct
+// Type definition for `destiny2::models::CurrentBattle` struct
 export interface CurrentBattle {
 	player: string;
 	battle_id: BigNumberish;
 }
 
-// Type definition for `destiny::models::Destiny` struct
+// Type definition for `destiny2::models::Destiny` struct
 export interface Destiny {
 	key: BigNumberish;
 	total_battles: BigNumberish;
 }
 
-// Type definition for `destiny::models::Progress` struct
+// Type definition for `destiny2::models::Progress` struct
 export interface Progress {
 	player: BigNumberish;
 	level: BigNumberish;
 	completed: boolean;
 }
 
-// Type definition for `destiny::random::Nonce` struct
+// Type definition for `destiny2::random::Nonce` struct
 export interface Nonce {
 	key: BigNumberish;
 	value: BigNumberish;
 }
 
-// Type definition for `destiny::models::BattleCreatedEvent` struct
+// Type definition for `destiny2::models::BattleCreatedEvent` struct
 export interface BattleCreatedEvent {
 	player: string;
 	id: BigNumberish;
 }
 
-// Type definition for `destiny::models::BuffEvent` struct
+// Type definition for `destiny2::models::BuffEvent` struct
 export interface BuffEvent {
 	battle_id: BigNumberish;
 	from_idx: BigNumberish;
@@ -75,7 +75,7 @@ export interface BuffEvent {
 	amount: BigNumberish;
 }
 
-// Type definition for `destiny::models::DamageEvent` struct
+// Type definition for `destiny2::models::DamageEvent` struct
 export interface DamageEvent {
 	battle_id: BigNumberish;
 	from_idx: BigNumberish;
@@ -84,7 +84,7 @@ export interface DamageEvent {
 	damage: BigNumberish;
 }
 
-// Type definition for `destiny::models::DebuffEvent` struct
+// Type definition for `destiny2::models::DebuffEvent` struct
 export interface DebuffEvent {
 	battle_id: BigNumberish;
 	from_idx: BigNumberish;
@@ -93,7 +93,7 @@ export interface DebuffEvent {
 	amount: BigNumberish;
 }
 
-// Type definition for `destiny::models::HealEvent` struct
+// Type definition for `destiny2::models::HealEvent` struct
 export interface HealEvent {
 	battle_id: BigNumberish;
 	from_idx: BigNumberish;
@@ -101,27 +101,27 @@ export interface HealEvent {
 	amount: BigNumberish;
 }
 
-// Type definition for `destiny::models::MissEvent` struct
+// Type definition for `destiny2::models::MissEvent` struct
 export interface MissEvent {
 	battle_id: BigNumberish;
 	from_idx: BigNumberish;
 	to_idx: BigNumberish;
 }
 
-// Type definition for `destiny::models::PlayerLoseEvent` struct
+// Type definition for `destiny2::models::PlayerLoseEvent` struct
 export interface PlayerLoseEvent {
 	battle_id: BigNumberish;
 	player: string;
 }
 
-// Type definition for `destiny::models::PlayerWinEvent` struct
+// Type definition for `destiny2::models::PlayerWinEvent` struct
 export interface PlayerWinEvent {
 	battle_id: BigNumberish;
 	player: string;
 }
 
 export interface SchemaType extends ISchemaType {
-	destiny: {
+	destiny2: {
 		Battle: Battle,
 		Character: Character,
 		CharacterStatus: CharacterStatus,
@@ -140,7 +140,7 @@ export interface SchemaType extends ISchemaType {
 	},
 }
 export const schema: SchemaType = {
-	destiny: {
+	destiny2: {
 		Battle: {
 			id: 0,
 			level: 0,
@@ -232,19 +232,19 @@ export const schema: SchemaType = {
 	},
 };
 export enum ModelsMapping {
-	Battle = 'destiny-Battle',
-	Character = 'destiny-Character',
-	CharacterStatus = 'destiny-CharacterStatus',
-	CurrentBattle = 'destiny-CurrentBattle',
-	Destiny = 'destiny-Destiny',
-	Progress = 'destiny-Progress',
-	Nonce = 'destiny-Nonce',
-	BattleCreatedEvent = 'destiny-BattleCreatedEvent',
-	BuffEvent = 'destiny-BuffEvent',
-	DamageEvent = 'destiny-DamageEvent',
-	DebuffEvent = 'destiny-DebuffEvent',
-	HealEvent = 'destiny-HealEvent',
-	MissEvent = 'destiny-MissEvent',
-	PlayerLoseEvent = 'destiny-PlayerLoseEvent',
-	PlayerWinEvent = 'destiny-PlayerWinEvent',
+	Battle = 'destiny2-Battle',
+	Character = 'destiny2-Character',
+	CharacterStatus = 'destiny2-CharacterStatus',
+	CurrentBattle = 'destiny2-CurrentBattle',
+	Destiny = 'destiny2-Destiny',
+	Progress = 'destiny2-Progress',
+	Nonce = 'destiny2-Nonce',
+	BattleCreatedEvent = 'destiny2-BattleCreatedEvent',
+	BuffEvent = 'destiny2-BuffEvent',
+	DamageEvent = 'destiny2-DamageEvent',
+	DebuffEvent = 'destiny2-DebuffEvent',
+	HealEvent = 'destiny2-HealEvent',
+	MissEvent = 'destiny2-MissEvent',
+	PlayerLoseEvent = 'destiny2-PlayerLoseEvent',
+	PlayerWinEvent = 'destiny2-PlayerWinEvent',
 }

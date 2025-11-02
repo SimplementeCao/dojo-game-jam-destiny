@@ -42,7 +42,7 @@ export const useBattleData = (battleId?: number) => {
       // GraphQL query to get battle data - Torii schema format
       const battleQuery = `
         query GetBattle($battleId: Int!) {
-          destinyBattleModels(where: { id: $battleId }) {
+          destiny2BattleModels(where: { id: $battleId }) {
             edges {
               node {
                 id
@@ -86,8 +86,8 @@ export const useBattleData = (battleId?: number) => {
       console.log("Battle result:", battleResult);
       
       // Process battle data
-      if (battleResult.data && battleResult.data.model) {
-        const battleNode = battleResult.data.model;
+      if (battleResult.data.destiny2BattleModels.edges[0].node) {
+        const battleNode = battleResult.data.destiny2BattleModels.edges[0].node;
         
         console.log("Battle node from GraphQL:", battleNode);
         
@@ -96,8 +96,8 @@ export const useBattleData = (battleId?: number) => {
           id: toNumber(battleNode.id),
           level: toNumber(battleNode.level),
           player: battleNode.player,
-          heroes_indexes: battleNode.heroes_indexes,
-          monsters_indexes: battleNode.monsters_indexes,
+          heroes_ids: battleNode.heroes_ids,
+          monsters_ids: battleNode.monsters_ids,
           is_finished: battleNode.is_finished,
         } as Battle;
         
@@ -160,7 +160,7 @@ export const useCharacterData = (characterId?: number) => {
       // GraphQL query to get character data - using correct schema
       const characterQuery = `
         query GetCharacter($characterId: Int!) {
-          destinyCharacterModels(where: { id: $characterId }) {
+          destiny2CharacterModels(where: { id: $characterId }) {
             edges {
               node {
                 id
@@ -264,7 +264,7 @@ export const useCharacterStatusData = (battleId?: number, characterIndex?: numbe
       // GraphQL query to get character status data - using correct schema
       const characterStatusQuery = `
         query GetCharacterStatus($battleId: Int!, $characterIndex: Int!) {
-          destinyCharacterStatusModels(where: { battle_id: $battleId, character_index: $characterIndex }) {
+          destiny2CharacterStatusModels(where: { battle_id: $battleId, character_index: $characterIndex }) {
             edges {
               node {
                 id
