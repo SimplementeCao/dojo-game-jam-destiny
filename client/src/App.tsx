@@ -154,13 +154,6 @@ function Home() {
   
   // Debug: Log del estado de la wallet
   useEffect(() => {
-    console.log('🔍 Wallet Status Check:', {
-      account: !!account,
-      address: address,
-      status: status,
-      isConnected: isConnected,
-      connectorsAvailable: connectors.length
-    })
   }, [account, address, status, isConnected, connectors.length])
 
   // Log y redirección cuando la wallet se conecta
@@ -173,13 +166,8 @@ function Home() {
   // Combinar errores de acciones y locales
   const displayError = error || actionError
 
-  // Función para iniciar un nuevo juego o conectar wallet
   const startBattleCall = async () => {
-    console.log('🎮 startBattle() llamado', { isConnected, account: !!account, status })
-    
     if (!isConnected) {
-      // Si no hay cuenta conectada, conectar primero
-      console.log('🔌 Conectando wallet...')
       if (connectors.length > 0) {
         try {
           setLoading(true)
@@ -187,8 +175,6 @@ function Home() {
           console.log('Usando connector:', connectors[0].id || connectors[0].name)
           await connect({ connector: connectors[0] })
           console.log('✅ Wallet conectada exitosamente')
-          // La wallet se conectó, pero no navegamos automáticamente
-          // El usuario debe hacer clic de nuevo para iniciar el juego
         } catch (err) {
           console.error('❌ Error connecting wallet:', err)
           setError('Error al conectar la wallet')

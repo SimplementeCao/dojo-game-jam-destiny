@@ -17,7 +17,7 @@ pub struct Destiny {
 #[dojo::model]
 pub struct Progress {
     #[key]
-    pub player: u32,
+    pub player: ContractAddress,
     #[key]
     pub level: u32,
     pub completed: bool,

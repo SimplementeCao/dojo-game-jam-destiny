@@ -21,9 +21,6 @@ export const useGameActions = () => {
     setError(null);
 
     try {
-      console.log('Creating new battle');
-      console.log("account:", account.address, "level:", level);
-      console.log("client:", client);
       const response = await client.actions.startBattle(account, level);
       const transaction_hash = response?.transaction_hash ?? "";
       const tx = await account.waitForTransaction(transaction_hash, {
@@ -33,7 +30,6 @@ export const useGameActions = () => {
       if (tx.isSuccess()) {
         const events = tx.events;
         const battleCreatedEvent = events.find((event) => event.keys[1] === getEventKey("BattleCreatedEvent"));
-        console.log("[startBattle] - battleCreatedEvent: ", battleCreatedEvent, "battle_id: ", battleCreatedEvent?.data[3]);
 
         return {
           transaction_hash,
@@ -56,9 +52,6 @@ export const useGameActions = () => {
   const play = async (
     actions: Array<string>,
   ): Promise<{transaction_hash: string, parsed_events: { key: string, data: any }[]} | null> => {
-    console.log("[play] - start - actions: ", actions);
-    console.log("[play] - account: ", account);
-
     if (!account) {
       setError("No account connected");
       return null;
@@ -68,10 +61,6 @@ export const useGameActions = () => {
     setError(null);
 
     try {
-      console.log("Playing actions");
-      console.log("Account:", account.address);
-      console.log("Actions:", actions);
-      
       const response = await client.actions.play(account, actions);
       const transaction_hash = response?.transaction_hash ?? "";
       const tx = await account.waitForTransaction(transaction_hash, {
@@ -100,7 +89,6 @@ export const useGameActions = () => {
 
         events.forEach((event) => {
           if (event.keys[1] == getEventKey("DamageEvent")) {
-            console.log("[play] - Damage event: ", event);
             parsed_events.push({
               key: "DamageEvent",
               data: {
@@ -175,8 +163,6 @@ export const useGameActions = () => {
             });
           }
         });
-
-        console.log("[play] - Parsed events: ", parsed_events);
 
         // Retornar objeto con transaction_hash para consistencia con startBattle
         return { transaction_hash, parsed_events };

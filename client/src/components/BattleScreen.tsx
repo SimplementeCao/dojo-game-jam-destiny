@@ -49,7 +49,7 @@ export default function BattleScreen() {
       return
     }
 
-      const loadStatuses = async () => {
+      const loadStatuses = async (forceRefreshBattle = false) => {
       if (!battle || !battle.id) {
         setHeroesStatus([])
         setMonstersStatus([])
@@ -64,7 +64,7 @@ export default function BattleScreen() {
             body: JSON.stringify({
               query: `
                 query GetCharacterStatus($battleId: Int!, $characterId: Int!) {
-                  destiny4CharacterStatusModels(
+                  destiny5CharacterStatusModels(
                     where: { battle_id: $battleId, character_id: $characterId }
                   ) {
                     edges {
@@ -96,8 +96,8 @@ export default function BattleScreen() {
             return null
           }
           
-          if (result.data?.destiny4CharacterStatusModels?.edges?.length > 0) {
-            const node = result.data.destiny4CharacterStatusModels.edges[0].node
+          if (result.data?.destiny5CharacterStatusModels?.edges?.length > 0) {
+            const node = result.data.destiny5CharacterStatusModels.edges[0].node
             return node
           }
           
@@ -107,47 +107,50 @@ export default function BattleScreen() {
         }
       }
 
-      // Reload battle data directly to get updated IDs (characters removed when dead)
-      const battleQueryResponse = await fetch(`${dojoConfig.toriiUrl}/graphql`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: `
-            query GetBattle($battleId: Int!) {
-              destiny4BattleModels(where: { id: $battleId }) {
-                edges {
-                  node {
-                    id
-                    heroes_ids
-                    monsters_ids
-                  }
-                }
-              }
-            }
-          `,
-          variables: { battleId: battle.id }
-        })
-      })
-
       let updatedHeroIds: any[] = []
       let updatedMonsterIds: any[] = []
 
-      if (battleQueryResponse.ok) {
-        const battleQueryResult = await battleQueryResponse.json()
-        if (battleQueryResult.data?.destiny4BattleModels?.edges?.length > 0) {
-          const battleNode = battleQueryResult.data.destiny4BattleModels.edges[0].node
-          updatedHeroIds = battleNode.heroes_ids || []
-          updatedMonsterIds = battleNode.monsters_ids || []
+      // Only refresh battle data if forceRefreshBattle is true (after play)
+      // Otherwise use the battle object we already have
+      if (forceRefreshBattle) {
+        const battleQueryResponse = await fetch(`${dojoConfig.toriiUrl}/graphql`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: `
+              query GetBattle($battleId: Int!) {
+                destiny5BattleModels(where: { id: $battleId }) {
+                  edges {
+                    node {
+                      id
+                      heroes_ids
+                      monsters_ids
+                    }
+                  }
+                }
+              }
+            `,
+            variables: { battleId: battle.id }
+          })
+        })
+
+        if (battleQueryResponse.ok) {
+          const battleQueryResult = await battleQueryResponse.json()
+          if (battleQueryResult.data?.destiny5BattleModels?.edges?.length > 0) {
+            const battleNode = battleQueryResult.data.destiny5BattleModels.edges[0].node
+            updatedHeroIds = battleNode.heroes_ids || []
+            updatedMonsterIds = battleNode.monsters_ids || []
+          }
         }
       }
 
-      // If query failed, fallback to current battle data
+      // If we didn't refresh or refresh failed, use current battle data
       if (updatedHeroIds.length === 0 && updatedMonsterIds.length === 0) {
         updatedHeroIds = battle.heroes_ids || []
         updatedMonsterIds = battle.monsters_ids || []
       }
 
-      // Load heroes and monsters in parallel using updated IDs
+      // Load heroes and monsters in parallel using IDs
       const heroPromises = updatedHeroIds.map((heroId: any) => 
         loadCharacterStatus(parseToDecimal(heroId))
       )
@@ -163,20 +166,14 @@ export default function BattleScreen() {
       const validHeroes = heroResults.filter((status: any) => status !== null)
       const validMonsters = monsterResults.filter((status: any) => status !== null)
 
-      console.log('🔄 Reloaded statuses:', {
-        heroes: validHeroes.length,
-        monsters: validMonsters.length,
-        heroIds: updatedHeroIds.map((id: any) => parseToDecimal(id)),
-        monsterIds: updatedMonsterIds.map((id: any) => parseToDecimal(id))
-      })
-
       setHeroesStatus(validHeroes)
       setMonstersStatus(validMonsters)
     }
 
-    loadAllStatuses.current = loadStatuses
-    loadStatuses()
-  }, [battle?.id])
+    loadAllStatuses.current = () => loadStatuses(true) // When called manually, force refresh battle data
+    loadStatuses(false) // Initial load uses existing battle data
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [battle?.id]) // Only re-run when battle.id changes
 
   // Load character skills when hovering
   useEffect(() => {
@@ -225,10 +222,7 @@ export default function BattleScreen() {
     const refs = isMonster ? monstersRefs.current : heroesRefs.current
     const element = refs[characterId]
     
-    console.log('📍 Looking for position for character_id:', characterId, 'isMonster:', isMonster, 'element:', !!element)
-    
     if (!element) {
-      console.warn('⚠️ Element not found for character_id:', characterId, 'Available refs:', Object.keys(refs))
       return null
     }
     
@@ -238,7 +232,6 @@ export default function BattleScreen() {
       y: rect.top + rect.height / 2
     }
     
-    console.log('✅ Position found:', position)
     return position
   }
 
@@ -262,13 +255,7 @@ export default function BattleScreen() {
     const id = `anim-${Date.now()}-${Math.random()}`
     const animation: FloatingAnimation = { id, value, x, y, color, critical, label }
     
-    console.log('🎬 Adding floating animation:', { id, value, x, y, color, critical, label })
-    
-    setFloatingAnimations(prev => {
-      const newAnimations = [...prev, animation]
-      console.log('📊 Total animations:', newAnimations.length)
-      return newAnimations
-    })
+    setFloatingAnimations(prev => [...prev, animation])
     
     // Remove animation after it ends
     setTimeout(() => {
@@ -292,7 +279,6 @@ export default function BattleScreen() {
       return action !== undefined ? String(action).padStart(3, '0') : '000'
     })
     
-    console.log('Playing with actions:', actionStrings)
     const result = await play(actionStrings);
     if (result) {
       // Wait a moment for refs to be updated
@@ -313,8 +299,7 @@ export default function BattleScreen() {
         
         setTimeout(() => {
           if (event.key === "DamageEvent") {
-            const { battle_id, from_idx, to_idx, critical_hit, damage, is_monster } = event.data;
-            console.log(`🔥 Damage event: { battle_id: ${battle_id}, from_idx: ${from_idx}, to_idx: ${to_idx}, critical_hit: ${critical_hit}, damage: ${damage}, is_monster: ${is_monster} }`);
+            const { from_idx, to_idx, critical_hit, damage, is_monster } = event.data;
             
             const attackerIsMonster = parseToDecimal(is_monster) === 1
             const targetIsMonster = !attackerIsMonster // The target is on the opposite side
@@ -350,8 +335,7 @@ export default function BattleScreen() {
             }
           } 
           else if (event.key === "BuffEvent") {
-            const { battle_id, from_idx, to_idx, buff_id, amount, is_monster } = event.data;
-            console.log(`🔥 Buff event: { battle_id: ${battle_id}, from_idx: ${from_idx}, to_idx: ${to_idx}, buff_id: ${buff_id}, amount: ${amount}, is_monster: ${is_monster} }`);
+            const { from_idx, to_idx, amount, is_monster } = event.data;
             
             // Buff only applies between allies, so from_idx and to_idx are in the same array
             const isMonster = parseToDecimal(is_monster) === 1
@@ -377,8 +361,7 @@ export default function BattleScreen() {
             }
           }
           else if (event.key === "DebuffEvent") {
-            const { battle_id, from_idx, to_idx, debuff_id, amount, is_monster } = event.data;
-            console.log(`🔥 Debuff event: { battle_id: ${battle_id}, from_idx: ${from_idx}, to_idx: ${to_idx}, debuff_id: ${debuff_id}, amount: ${amount}, is_monster: ${is_monster} }`);
+            const { from_idx, to_idx, amount, is_monster } = event.data;
             
             const attackerIsMonster = parseToDecimal(is_monster) === 1
             const targetIsMonster = !attackerIsMonster
@@ -408,8 +391,7 @@ export default function BattleScreen() {
             }
           }
           else if (event.key === "HealEvent") {
-            const { battle_id, from_idx, to_idx, amount, is_monster } = event.data;
-            console.log(`🔥 Heal event: { battle_id: ${battle_id}, from_idx: ${from_idx}, to_idx: ${to_idx}, amount: ${amount}, is_monster: ${is_monster} }`);
+            const { from_idx, to_idx, amount, is_monster } = event.data;
             
             // Heal only applies between allies, so from_idx and to_idx are in the same array
             const isMonster = parseToDecimal(is_monster) === 1
@@ -435,8 +417,7 @@ export default function BattleScreen() {
             }
           }
           else if (event.key === "MissEvent") {
-            const { battle_id, from_idx, to_idx, is_monster } = event.data;
-            console.log(`🔥 Miss event: { battle_id: ${battle_id}, from_idx: ${from_idx}, to_idx: ${to_idx}, is_monster: ${is_monster} }`);
+            const { from_idx, to_idx, is_monster } = event.data;
             
             const attackerIsMonster = parseToDecimal(is_monster) === 1
             const targetIsMonster = !attackerIsMonster
@@ -461,9 +442,6 @@ export default function BattleScreen() {
             }
           }
           else if (event.key === "PlayerWinEvent") {
-            const { battle_id, player } = event.data;
-            console.log(`🔥 Player win event: { battle_id: ${battle_id}, player: ${player} }`);
-            
             // Animation in the center of the screen
             const centerX = window.innerWidth / 2
             const centerY = window.innerHeight / 2
@@ -475,9 +453,6 @@ export default function BattleScreen() {
             )
           }
           else if (event.key === "PlayerLoseEvent") {
-            const { battle_id, player } = event.data;
-            console.log(`🔥 Player lose event: { battle_id: ${battle_id}, player: ${player} }`);
-            
             // Animation in the center of the screen
             const centerX = window.innerWidth / 2
             const centerY = window.innerHeight / 2
@@ -539,7 +514,6 @@ export default function BattleScreen() {
         selectionStep === 'hero' &&
         !hasCalledPlay.current) { // Only auto-play when in hero selection step and haven't called yet
       // All heroes have actions, automatically call handlePlay
-      console.log('All heroes have actions, calling handlePlay')
       hasCalledPlay.current = true
       handlePlay().finally(() => {
         // Reset the flag after play completes (allows next round)
@@ -553,7 +527,6 @@ export default function BattleScreen() {
     if (selectionStep !== 'hero') return;
     // Check if this hero already has an action
     if (heroActions[heroIndex] !== undefined) {
-      console.log(`Hero ${heroIndex} already has an action assigned`)
       return
     }
     // 100 * index (skill and target come later)
@@ -561,7 +534,6 @@ export default function BattleScreen() {
     setTempAction(heroNum);
     setSelectedHeroIndex(heroIndex);
     setSelectionStep('skill');
-    console.log(`hero index: ${heroIndex} (selected), Temp action: ${String(heroNum).padStart(3, "0")}`);
   };
 
   const handleSkillClick = (skillIndex: number) => {
@@ -570,7 +542,6 @@ export default function BattleScreen() {
       // prev is a number (e.g. H00), add skill as ones digit
       const num = prev + skillIndex;
       const result = num;
-      console.log(`skill index: ${skillIndex} (selected), Temp action: ${String(result).padStart(3, '0')}`);
       setSelectedSkillId(skillIndex);
       // Determine if this skill targets allies or enemies
       if (isSkillForAllies(skillIndex)) {
@@ -592,7 +563,6 @@ export default function BattleScreen() {
       // prev is Hero+Skill, add monsterIndex * 10 to get full action number
       const num = prev + monsterIndex * 10;
       const result = num;
-      console.log(`monster index: ${monsterIndex} (selected), Final action: ${String(result).padStart(3, '0')}`);
       
       // Add to actions array and track by hero index
       setActions(a => [...a, result]);
@@ -619,7 +589,6 @@ export default function BattleScreen() {
       // For now, we'll use the ally's index as target
       const num = prev + allyIndex * 10;
       const result = num;
-      console.log(`ally index: ${allyIndex} (selected), Final action: ${String(result).padStart(3, '0')}`);
       
       // Add to actions array and track by hero index
       setActions(a => [...a, result]);

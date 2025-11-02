@@ -19,6 +19,7 @@ pub mod actions {
     use crate::models::{
         Battle, BattleCreatedEvent, BuffEvent, Character, CharacterStatus, CurrentBattle,
         DamageEvent, DebuffEvent, Destiny, HealEvent, MissEvent, PlayerLoseEvent, PlayerWinEvent,
+        Progress,
     };
     use crate::random::{Random, RandomTrait};
 
@@ -211,6 +212,7 @@ pub mod actions {
 
             if monsters_alive_ids.is_empty() {
                 world.emit_event(@PlayerWinEvent { battle_id, player: battle.player });
+                world.write_model(@Progress { player: battle.player, level: battle.level, completed: true });
                 world.write_model(@CurrentBattle { player: battle.player, battle_id: 0 });
                 is_finished = true;
             }
@@ -232,16 +234,22 @@ pub mod actions {
                             .unwrap();
                         enemy_actions.append((monster_index, target_index, skill_id));
                     } else if is_heal_action(skill_id) {
-                        let target_index = random
-                            .between(0, (battle.monsters_ids.len() - 1).try_into().unwrap())
+                        let target_index = if monsters_alive_ids.len() > 1 {
+                            random
+                            .between(0, (monsters_alive_ids.len() - 1).try_into().unwrap())
                             .try_into()
-                            .unwrap();
+                            .unwrap()
+                        } else { 0 };
                         enemy_actions.append((monster_index, target_index, skill_id));
                     } else if is_buff_action(skill_id) {
-                        let target_index = random
-                            .between(0, (battle.monsters_ids.len() - 1).try_into().unwrap())
-                            .try_into()
-                            .unwrap();
+                        let target_index = if monsters_alive_ids.len() > 1 {
+                            random
+                                .between(0, (monsters_alive_ids.len() - 1).try_into().unwrap())
+                                .try_into()
+                                .unwrap()
+                            } else {
+                                0
+                            };
                         enemy_actions.append((monster_index, target_index, skill_id));
                     } else if is_debuff_action(skill_id) {
                         let target_index = random
@@ -329,7 +337,7 @@ pub mod actions {
     #[generate_trait]
     impl InternalImpl of InternalTrait {
         fn world_default(self: @ContractState) -> WorldStorage {
-            self.world(@"destiny4")
+            self.world(@"destiny5")
         }
 
         fn do_action(
@@ -386,7 +394,12 @@ pub mod actions {
                     damage = damage * 2;
                 }
 
-                let actual_damage = damage - to_status.defense;
+                let actual_damage = if damage > to_status.defense {
+                    damage - to_status.defense
+                } else {
+                    0
+                };
+
                 to_status.current_hp = if actual_damage > to_status.current_hp {
                     0
                 } else {
@@ -451,9 +464,17 @@ pub mod actions {
                 };
 
                 if action_id == DEBUFF_DEFENSE_ACTION_ID {
-                    to_status.defense = to_status.defense - amount;
+                    to_status.defense = if amount > to_status.defense {
+                        to_status.defense - amount
+                    } else {
+                        0
+                    };
                 } else if action_id == DEBUFF_ATTACK_ACTION_ID {
-                    to_status.attack = to_status.attack - amount;
+                    to_status.attack = if amount > to_status.attack {
+                        to_status.attack - amount
+                    } else {
+                        0
+                    };
                 } else {}
                 world
                     .emit_event(
@@ -501,7 +522,7 @@ pub mod actions {
             } else if level == 2 {
                 [4, 5, 6].span()
             } else if level == 3 {
-                [5, 7, 6].span()
+                [5, 7, 6, 5].span()
             } else {
                 [].span()
             };

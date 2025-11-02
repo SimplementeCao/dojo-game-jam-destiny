@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useDojoSDK } from "@dojoengine/sdk/react";
-import type { Battle, Character, CharacterStatus } from "../dojo/generated/typescript/models.gen";
+import type { Battle, CharacterStatus, Progress } from "../dojo/generated/typescript/models.gen";
 import { dojoConfig } from '../dojo/dojoConfig'
 
 // Helper function to convert BigNumberish to number
@@ -18,8 +18,7 @@ export const useBattleData = (battleId?: number) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadBattleData = async () => {
-    
+  const loadBattleData = useCallback(async () => {
     if (!battleId || !client) {
       return;
     }
@@ -30,7 +29,7 @@ export const useBattleData = (battleId?: number) => {
     try {
       const battleQuery = `
         query GetBattle($battleId: Int!) {
-          destiny4BattleModels(where: { id: $battleId }) {
+          destiny5BattleModels(where: { id: $battleId }) {
             edges {
               node {
                 id
@@ -72,8 +71,8 @@ export const useBattleData = (battleId?: number) => {
         throw new Error(`GraphQL battle error: ${battleResult.errors[0]?.message || 'Unknown error'}`);
       }
       
-      if (battleResult.data?.destiny4BattleModels?.edges?.length > 0) {
-        const battleNode = battleResult.data.destiny4BattleModels.edges[0].node;
+      if (battleResult.data?.destiny5BattleModels?.edges?.length > 0) {
+        const battleNode = battleResult.data.destiny5BattleModels.edges[0].node;
         
         battleData = {
           id: toNumber(battleNode.id),
@@ -89,15 +88,18 @@ export const useBattleData = (battleId?: number) => {
       
       setBattle(battleData);
       } catch (err) {
+        console.error("[useBattleData] - Error loading battle data:", err);
         setError(err instanceof Error ? err.message : "Error loading battle data");
       } finally {
         setLoading(false);
       }
-    };
+    }, [battleId, client]);
 
   useEffect(() => {
-    loadBattleData();
-  }, [battleId]);
+    if (battleId && client) {
+      loadBattleData();
+    }
+  }, [battleId, client, loadBattleData]);
 
   return {
     battle,
@@ -106,95 +108,6 @@ export const useBattleData = (battleId?: number) => {
     refetch: loadBattleData,
   };
 };
-
-export const useCharacterData = (characterId?: number) => {
-  const { client } = useDojoSDK();
-  const [character, setCharacter] = useState<Character | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const loadCharacterData = async () => {
-    if (!characterId || !client) {
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const characterQuery = `
-        query GetCharacter($characterId: Int!) {
-          destiny4CharacterModels(where: { id: $characterId }) {
-            edges {
-              node {
-                id
-                name
-                skills
-                health
-                attack
-                defense
-                critical_chance
-                evasion
-              }
-            }
-          }
-        }
-      `;
-
-      const response = await fetch(`${dojoConfig.toriiUrl}/graphql`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: characterQuery,
-          variables: { characterId }
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const result = await response.json();
-
-      let characterData: Character | null = null;
-      if (result.data.destiny4CharacterModels.edges[0].node) {
-        const characterNode = result.data.model;
-          
-          characterData = {
-            id: toNumber(characterNode.id),
-            name: characterNode.name,
-            skills: characterNode.skills,
-            health: toNumber(characterNode.health),
-            attack: toNumber(characterNode.attack),
-            defense: toNumber(characterNode.defense),
-            critical_chance: toNumber(characterNode.critical_chance),
-            evasion: toNumber(characterNode.evasion),
-          } as Character;
-          setCharacter(characterData);
-
-      } else if (result.errors) {
-        console.error("GraphQL errors:", result.errors);
-        throw new Error(`GraphQL error: ${result.errors[0]?.message || 'Unknown error'}`);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (characterId) {
-      loadCharacterData();
-    }
-  }, [characterId]);
-
-  return {
-    character,
-    loading,
-    error,
-    refetch: loadCharacterData,
-  };
-}; 
 
 export const useCharacterStatusData = (battleId?: number, characterId?: number) => {
   const { client } = useDojoSDK();
@@ -213,7 +126,7 @@ export const useCharacterStatusData = (battleId?: number, characterId?: number) 
     try {
       const characterStatusQuery = `
         query GetCharacterStatus($battleId: Int!, $characterId: Int!) {
-          destiny4CharacterStatusModels(
+          destiny5CharacterStatusModels(
             where: { 
               battle_id: $battleId,
               character_id: $characterId
@@ -252,8 +165,8 @@ export const useCharacterStatusData = (battleId?: number, characterId?: number) 
       const result = await response.json();
       
       let characterStatusData: CharacterStatus | null = null;
-      if (result.data?.destiny4CharacterStatusModels?.edges?.length > 0) {
-        const characterStatusNode = result.data.destiny4CharacterStatusModels.edges[0].node;
+      if (result.data?.destiny5CharacterStatusModels?.edges?.length > 0) {
+        const characterStatusNode = result.data.destiny5CharacterStatusModels.edges[0].node;
         
         characterStatusData = {
           battle_id: toNumber(characterStatusNode.battle_id),
@@ -290,5 +203,93 @@ export const useCharacterStatusData = (battleId?: number, characterId?: number) 
     loading,
     error,
     refetch: loadCharacterStatusData,
+  };
+}; 
+
+export const useProgressData = (player?: string, level?: number) => {
+  const { client } = useDojoSDK();
+  const [progress, setProgress] = useState<Progress | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadProgressData = async () => {
+    if (!player || !level || !client) {
+      return;
+    }
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const progressQuery = `
+        query GetProgress($player: String!, $level: Int!) {
+          destiny5ProgressModels(
+            where: { 
+              player: $player,
+              level: $level
+            }
+          ) {
+            edges {
+              node {
+                player
+                level
+                completed
+              }
+            }
+          }
+        }
+      `;
+
+      const response = await fetch(`${dojoConfig.toriiUrl}/graphql`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: progressQuery,
+           variables: { player, level }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      let progressData: Progress | null = null;
+      if (result.data?.destiny5ProgressModels?.edges?.length > 0) {
+        const progressNode = result.data.destiny5ProgressModels.edges[0].node;
+
+        progressData = {
+          player: progressNode.player,
+          level: toNumber(progressNode.level),
+          completed: progressNode.completed,
+        } as Progress;
+        setProgress(progressData);
+      } else if (result.errors) {
+        throw new Error(`GraphQL error: ${result.errors[0]?.message || 'Unknown error'}`);
+      } else {
+        progressData = null;
+        setProgress(null);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error loading progress data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (player && level !== undefined) {
+      loadProgressData();
+    }
+  }, [player, level]);
+
+  return {
+    progress,
+    loading,
+    error,
+    refetch: loadProgressData,
   };
 }; 

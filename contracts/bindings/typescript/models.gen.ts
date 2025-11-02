@@ -2,7 +2,7 @@ import type { SchemaType as ISchemaType } from "@dojoengine/sdk";
 
 import { BigNumberish } from 'starknet';
 
-// Type definition for `destiny4::models::Battle` struct
+// Type definition for `destiny5::models::Battle` struct
 export interface Battle {
 	id: BigNumberish;
 	level: BigNumberish;
@@ -12,7 +12,7 @@ export interface Battle {
 	is_finished: boolean;
 }
 
-// Type definition for `destiny4::models::Character` struct
+// Type definition for `destiny5::models::Character` struct
 export interface Character {
 	id: BigNumberish;
 	name: string;
@@ -24,7 +24,7 @@ export interface Character {
 	evasion: BigNumberish;
 }
 
-// Type definition for `destiny4::models::CharacterStatus` struct
+// Type definition for `destiny5::models::CharacterStatus` struct
 export interface CharacterStatus {
 	battle_id: BigNumberish;
 	character_id: BigNumberish;
@@ -36,93 +36,98 @@ export interface CharacterStatus {
 	evasion: BigNumberish;
 }
 
-// Type definition for `destiny4::models::CurrentBattle` struct
+// Type definition for `destiny5::models::CurrentBattle` struct
 export interface CurrentBattle {
 	player: string;
 	battle_id: BigNumberish;
 }
 
-// Type definition for `destiny4::models::Destiny` struct
+// Type definition for `destiny5::models::Destiny` struct
 export interface Destiny {
 	key: BigNumberish;
 	total_battles: BigNumberish;
 }
 
-// Type definition for `destiny4::models::Progress` struct
+// Type definition for `destiny5::models::Progress` struct
 export interface Progress {
-	player: BigNumberish;
+	player: string;
 	level: BigNumberish;
 	completed: boolean;
 }
 
-// Type definition for `destiny4::random::Nonce` struct
+// Type definition for `destiny5::random::Nonce` struct
 export interface Nonce {
 	key: BigNumberish;
 	value: BigNumberish;
 }
 
-// Type definition for `destiny4::models::BattleCreatedEvent` struct
+// Type definition for `destiny5::models::BattleCreatedEvent` struct
 export interface BattleCreatedEvent {
 	player: string;
 	id: BigNumberish;
 }
 
-// Type definition for `destiny4::models::BuffEvent` struct
+// Type definition for `destiny5::models::BuffEvent` struct
 export interface BuffEvent {
 	battle_id: BigNumberish;
 	from_idx: BigNumberish;
 	to_idx: BigNumberish;
 	buff_id: BigNumberish;
 	amount: BigNumberish;
+	is_monster: boolean;
 }
 
-// Type definition for `destiny4::models::DamageEvent` struct
+// Type definition for `destiny5::models::DamageEvent` struct
 export interface DamageEvent {
 	battle_id: BigNumberish;
 	from_idx: BigNumberish;
 	to_idx: BigNumberish;
 	critical_hit: boolean;
 	damage: BigNumberish;
+	is_monster: boolean;
 }
 
-// Type definition for `destiny4::models::DebuffEvent` struct
+// Type definition for `destiny5::models::DebuffEvent` struct
 export interface DebuffEvent {
 	battle_id: BigNumberish;
 	from_idx: BigNumberish;
 	to_idx: BigNumberish;
 	debuff_id: BigNumberish;
 	amount: BigNumberish;
+	is_monster: boolean;
 }
 
-// Type definition for `destiny4::models::HealEvent` struct
+// Type definition for `destiny5::models::HealEvent` struct
 export interface HealEvent {
 	battle_id: BigNumberish;
 	from_idx: BigNumberish;
 	to_idx: BigNumberish;
 	amount: BigNumberish;
+	is_monster: boolean;
 }
 
-// Type definition for `destiny4::models::MissEvent` struct
+// Type definition for `destiny5::models::MissEvent` struct
 export interface MissEvent {
 	battle_id: BigNumberish;
 	from_idx: BigNumberish;
 	to_idx: BigNumberish;
+	is_monster: boolean;
 }
 
-// Type definition for `destiny4::models::PlayerLoseEvent` struct
+// Type definition for `destiny5::models::PlayerLoseEvent` struct
 export interface PlayerLoseEvent {
 	battle_id: BigNumberish;
 	player: string;
 }
 
-// Type definition for `destiny4::models::PlayerWinEvent` struct
+// Type definition for `destiny5::models::PlayerWinEvent` struct
 export interface PlayerWinEvent {
 	battle_id: BigNumberish;
 	player: string;
 }
 
 export interface SchemaType extends ISchemaType {
-	destiny4: {
+	destiny5: {
 		Battle: Battle,
 		Character: Character,
 		CharacterStatus: CharacterStatus,
@@ -141,7 +146,7 @@ export interface SchemaType extends ISchemaType {
 	},
 }
 export const schema: SchemaType = {
-	destiny4: {
+	destiny5: {
 		Battle: {
 			id: 0,
 			level: 0,
@@ -179,7 +184,7 @@ export const schema: SchemaType = {
 			total_battles: 0,
 		},
 		Progress: {
-			player: 0,
+			player: "",
 			level: 0,
 			completed: false,
 		},
@@ -197,6 +202,7 @@ export const schema: SchemaType = {
 			to_idx: 0,
 			buff_id: 0,
 			amount: 0,
+			is_monster: false,
 		},
 		DamageEvent: {
 			battle_id: 0,
@@ -204,6 +210,7 @@ export const schema: SchemaType = {
 			to_idx: 0,
 			critical_hit: false,
 			damage: 0,
+			is_monster: false,
 		},
 		DebuffEvent: {
 			battle_id: 0,
@@ -211,17 +218,20 @@ export const schema: SchemaType = {
 			to_idx: 0,
 			debuff_id: 0,
 			amount: 0,
+			is_monster: false,
 		},
 		HealEvent: {
 			battle_id: 0,
 			from_idx: 0,
 			to_idx: 0,
 			amount: 0,
+			is_monster: false,
 		},
 		MissEvent: {
 			battle_id: 0,
 			from_idx: 0,
 			to_idx: 0,
+			is_monster: false,
 		},
 		PlayerLoseEvent: {
 			battle_id: 0,
@@ -234,19 +244,19 @@ export const schema: SchemaType = {
 	},
 };
 export enum ModelsMapping {
-	Battle = 'destiny4-Battle',
-	Character = 'destiny4-Character',
-	CharacterStatus = 'destiny4-CharacterStatus',
-	CurrentBattle = 'destiny4-CurrentBattle',
-	Destiny = 'destiny4-Destiny',
-	Progress = 'destiny4-Progress',
-	Nonce = 'destiny4-Nonce',
-	BattleCreatedEvent = 'destiny4-BattleCreatedEvent',
-	BuffEvent = 'destiny4-BuffEvent',
-	DamageEvent = 'destiny4-DamageEvent',
-	DebuffEvent = 'destiny4-DebuffEvent',
-	HealEvent = 'destiny4-HealEvent',
-	MissEvent = 'destiny4-MissEvent',
-	PlayerLoseEvent = 'destiny4-PlayerLoseEvent',
-	PlayerWinEvent = 'destiny4-PlayerWinEvent',
+	Battle = 'destiny5-Battle',
+	Character = 'destiny5-Character',
+	CharacterStatus = 'destiny5-CharacterStatus',
+	CurrentBattle = 'destiny5-CurrentBattle',
+	Destiny = 'destiny5-Destiny',
+	Progress = 'destiny5-Progress',
+	Nonce = 'destiny5-Nonce',
+	BattleCreatedEvent = 'destiny5-BattleCreatedEvent',
+	BuffEvent = 'destiny5-BuffEvent',
+	DamageEvent = 'destiny5-DamageEvent',
+	DebuffEvent = 'destiny5-DebuffEvent',
+	HealEvent = 'destiny5-HealEvent',
+	MissEvent = 'destiny5-MissEvent',
+	PlayerLoseEvent = 'destiny5-PlayerLoseEvent',
+	PlayerWinEvent = 'destiny5-PlayerWinEvent',
 }
