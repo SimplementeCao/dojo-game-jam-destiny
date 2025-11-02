@@ -54,8 +54,11 @@ export const useGameActions = () => {
   };
 
   const play = async (
-    actions: Array<[BigNumberish, BigNumberish, BigNumberish]>,
+    actions: Array<string>,
   ): Promise<{transaction_hash: string} | null> => {
+    console.log("[play] - start - actions: ", actions);
+    console.log("[play] - account: ", account);
+
     if (!account) {
       setError("No account connected");
       return null;
@@ -78,7 +81,23 @@ export const useGameActions = () => {
       if (tx.isSuccess()) {
         const events = tx.events;
         console.log("[play] - Events: ", events);
-        return transaction_hash;
+        const damageEvents = events.filter((event) => event.keys[1] === getEventKey("DamageEvent"));
+        console.log("[play] - Damage events: ", damageEvents);
+        const buffEvents = events.filter((event) => event.keys[1] === getEventKey("BuffEvent"));
+        console.log("[play] - Buff events: ", buffEvents);
+        const debuffEvents = events.filter((event) => event.keys[1] === getEventKey("DebuffEvent"));
+        console.log("[play] - Debuff events: ", debuffEvents);
+        const healEvents = events.filter((event) => event.keys[1] === getEventKey("HealEvent"));
+        console.log("[play] - Heal events: ", healEvents);
+        const missEvents = events.filter((event) => event.keys[1] === getEventKey("MissEvent"));
+        console.log("[play] - Miss events: ", missEvents);
+        const playerWinEvents = events.filter((event) => event.keys[1] === getEventKey("PlayerWinEvent"));
+        console.log("[play] - Player win events: ", playerWinEvents);
+        const playerLoseEvents = events.filter((event) => event.keys[1] === getEventKey("PlayerLoseEvent"));
+        console.log("[play] - Player lose events: ", playerLoseEvents);
+        
+        // Retornar objeto con transaction_hash para consistencia con startBattle
+        return { transaction_hash };
       } else {
         console.error("[play] - Transaction failed:", tx);
         setError("Transaction failed");

@@ -1,16 +1,18 @@
-import { useEffect, useRef, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 // import { useBattleLogic } from '../hooks/useBattleLogic'
 import '../App.css'
 // import { getSkillsIdsByHeroId, getSkillById } from '../utils/battleUtils'
 import { useBattleData } from '../hooks/useBattleData'
 import { dojoConfig } from '../dojo/dojoConfig'
+import { useGameActions } from '../hooks/useGameActions'
 
 export default function BattleScreen() {
   const { battleId } = useParams()
   const [heroesStatus, setHeroesStatus] = useState<any[]>([])
   const [monstersStatus, setMonstersStatus] = useState<any[]>([])
   const { battle } = useBattleData(Number(battleId || 0))
+  const { play } = useGameActions();
 
   // Cargar characterStatus para héroes y monstruos
   useEffect(() => {
@@ -108,7 +110,7 @@ export default function BattleScreen() {
   //   selectSkill,
   // } = useBattleLogic()
 
-  const hasProcessedTurn = useRef(false)
+  // const hasProcessedTurn = useRef(false)
   // const heroActions = getHeroActions()
 
   // const selectedHeroClass = (heroId: HeroId) => {
@@ -200,7 +202,6 @@ export default function BattleScreen() {
 
   return (
     <div className={`escenario-root ${battle?.level}`}>
-    <div className="escenario-bg" />
     <div className="battle-screen">
       <h1>Battle Screen</h1>
       <p>Battle ID: {battleId}</p>
@@ -208,23 +209,28 @@ export default function BattleScreen() {
       <p>Battle data: {JSON.stringify(battle)}</p>
       <p>Heroes status: {JSON.stringify(heroesStatus)}</p>
       <p>Monsters status: {JSON.stringify(monstersStatus)}</p>
+      <button
+          onClick={async () => {
+            const result = await play(["111", "211"]);
+          }}
+        >
+          PLAY
+        </button>
 
       <div className="heroes-status-list">
         {heroesStatus?.map((status: any) => (
           <div key={status.character_id} className="character-wrapper">
-            <img
-              src={`/heroes/heroe${status.character_id}.gif`}
-              alt={`Heroe ${status.character_id}`}
-            />
             <div className="hp-bar-container">
               <span className="hp-label">HP</span>
               <div className="hp-bar-bg">
                 <div
                   className="hp-bar-fill"
                   style={{
-                    width: `${status.max_hp && status.max_hp > 0
-                      ? (status.current_hp / status.max_hp) * 100
-                      : 0}%`
+                    width: `${
+                      status.max_hp && status.max_hp > 0
+                        ? (status.current_hp / status.max_hp) * 100
+                        : 0
+                    }%`
                   }}
                 />
                 <span className="hp-text">
@@ -232,54 +238,43 @@ export default function BattleScreen() {
                 </span>
               </div>
             </div>
+            <img
+              src={`/characters/character_${status.character_id}.gif`}
+              alt={`Heroe ${status.character_id}`}
+            />
           </div>
         ))}
       </div>
-      // DIV PARA HEROES (heroes_ids.map)
-      // DIV PARA ENEMIGOS (monsters_ids.map)
-      // DIV PARA CUADRADO DE INFO
+      <div className="monsters-status-list">
+        {monstersStatus?.map((status: any) => (
+          <div key={status.character_id} className="character-wrapper">
+            <div className="hp-bar-container">
+              <span className="hp-label">HP</span>
+              <div className="hp-bar-bg">
+                <div
+                  className="hp-bar-fill"
+                  style={{
+                    width: `${
+                      status.max_hp && status.max_hp > 0
+                        ? (status.current_hp / status.max_hp) * 100
+                        : 0
+                    }%`
+                  }}
+                />
+                <span className="hp-text">
+                  {status.current_hp || 0}/{status.max_hp || 0}
+                </span>
+              </div>
+            </div>
+            <img
+              src={`/characters/character_${status.character_id}.gif`}
+              alt={`Monster ${status.character_id}`}
+            />
+          </div>
+        ))}
+      </div>
     </div>
     </div>
-    //   <div className="side side-left">
-    //     {/* Angel */}
-    //     <div className="character-wrapper">
-    //       <div className="hp-bar-container">
-    //         <span className="hp-label">HP</span>
-    //         <div className="hp-bar-bg">
-    //           <div className="hp-bar-fill" style={{ width: `${((getHero(HeroId.ANGEL)?.health || 0) / (getHero(HeroId.ANGEL)?.maxHealth || 1)) * 100}%` }} />
-    //           <span className="hp-text">{getHero(HeroId.ANGEL)?.health || 0}/{getHero(HeroId.ANGEL)?.maxHealth || 0}</span>
-    //         </div>
-    //       </div>
-    //       <div className={`actor actor-angel ${selectedHeroClass(HeroId.ANGEL)}`} onClick={() => handleHeroClick(HeroId.ANGEL)} title="Angel" />
-    //     </div>
-
-    //     {/* Mage */}
-    //     <div className="character-wrapper">
-    //       <div className="hp-bar-container">
-    //         <span className="hp-label">HP</span>
-    //         <div className="hp-bar-bg">
-    //           <div className="hp-bar-fill" style={{ width: `${((getHero(HeroId.MAGE)?.health || 0) / (getHero(HeroId.MAGE)?.maxHealth || 1)) * 100}%` }} />
-    //           <span className="hp-text">{getHero(HeroId.MAGE)?.health || 0}/{getHero(HeroId.MAGE)?.maxHealth || 0}</span>
-    //         </div>
-    //       </div>
-    //       <div className={`actor actor-mage ${selectedHeroClass(HeroId.MAGE)}`} onClick={() => handleHeroClick(HeroId.MAGE)} title="Mage" />
-    //     </div>
-
-    //     {/* Hero */}
-    //     <div className="character-wrapper">
-    //       <div className="hp-bar-container">
-    //         <span className="hp-label">HP</span>
-    //         <div className="hp-bar-bg">
-    //           <div className="hp-bar-fill" style={{ width: `${((getHero(HeroId.HERO)?.health || 0) / (getHero(HeroId.HERO)?.maxHealth || 1)) * 100}%` }} />
-    //           <span className="hp-text">{getHero(HeroId.HERO)?.health || 0}/{getHero(HeroId.HERO)?.maxHealth || 0}</span>
-    //         </div>
-    //       </div>
-    //       <div className={`actor actor-hero ${selectedHeroClass(HeroId.HERO)}`} onClick={() => handleHeroClick(HeroId.HERO)} title="Hero" />
-    //     </div>
-    //   </div>
-
-    //     ))}
-    //   </div>
     //   {/* Botones de habilidades - mostrar dinámicamente según el héroe seleccionado */}
     //   {battleState.phase === 'SELECT_SKILL' && battleState.selectedHero !== null && selectedHeroSkills.length > 0 && (
     //     <div className="skills-buttons-container">
