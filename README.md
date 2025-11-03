@@ -25,6 +25,9 @@ The game features a complete progression system, balanced combat mechanics, and 
 
 https://dojo-destiny.vercel.app/
 
+### Youtube demo gameplay 
+https://youtu.be/d0ZMfTjpQ28
+
 #### Getting Started
 1. **Connect Your Wallet**: 
    - Connect your Starknet wallet (Cartridge, Argent, or Braavos recommended)
