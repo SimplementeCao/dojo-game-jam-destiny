@@ -523,7 +523,7 @@ clip-path: inherit;
 	padding: 0.7em 0.6em;
 	color: #fff;
 	font-family: 'Press Start 2P', monospace;
-	font-size: clamp(10px, 2.5vh, 16px);
+	font-size: clamp(8px, 2.5vh, 14px);
 	line-height: 1.4;
 	width: calc(100% - 20px);
 	max-width: calc(100% - 20px);
@@ -548,7 +548,7 @@ clip-path: inherit;
 	border-radius: 8px;
 	color: rgba(255, 255, 255, 0.6);
 	font-family: 'Press Start 2P', monospace;
-	font-size: clamp(12px, 3vh, 18px);
+	font-size: clamp(8px, 2.5vh, 14px);
 	text-align: center;
 	padding: 15px 15px;
 	line-height: 1.6;
@@ -568,18 +568,18 @@ clip-path: inherit;
 
 .character-info-box-empty > div:first-child {
 	margin-bottom: 10px;
-	font-size: 1em;
+	font-size: 0.8em;
 }
 
 .character-info-box-empty > div:last-child {
-	font-size: 0.9em;
+	font-size: 0.8em;
 	line-height: 1.5;
 }
 
 .character-info-header {
 	flex-shrink: 0;
 	margin-bottom: 0.5em;
-	font-size: 0.6em;
+	font-size: 0.8em;
 	text-align: center;
 	text-decoration: underline;
 	padding-bottom: 0.5em;
@@ -603,6 +603,7 @@ clip-path: inherit;
 }
 
 .character-stat-row {
+	font-size: 0.7em;
 	display: flex;
 	justify-content: space-between;
 }
@@ -622,7 +623,7 @@ clip-path: inherit;
 
 .character-skill-list-title {
 	flex-shrink: 0;
-	font-size: 1em;
+	font-size: 0.8em;
 	margin-bottom: 0.4em;
 }
 
@@ -646,7 +647,7 @@ clip-path: inherit;
 }
 
 .character-skill-item {
-	font-size: 1em;
+	font-size: 0.8em;
 	padding: 0.6em 0.9em;
 	background: rgba(255, 255, 255, 0.1);
 	border: none;
@@ -665,12 +666,12 @@ clip-path: inherit;
 	color: #fff;
 	margin-bottom: 0.4em;
 	text-align: left;
-	font-size: 1em;
+	font-size: 0.8em;
 }
 
 .character-skill-item-description {
 	color: rgba(255, 255, 255, 0.7);
-	font-size: 0.95em;
+	font-size: 0.8em;
 	line-height: 1.4;
 	text-align: left;
 }
@@ -685,7 +686,7 @@ clip-path: inherit;
 	padding: 1.2em 0.9em;
 	color: #fff;
 	font-family: 'Press Start 2P', monospace;
-	font-size: clamp(10px, 2.5vh, 16px);
+	font-size: clamp(8px, 2.5vh, 14px);
 	line-height: 1.5;
 	width: 100%;
 	min-height: 100%;
@@ -706,7 +707,7 @@ clip-path: inherit;
 
 .selection-message {
 	font-family: 'Press Start 2P', monospace;
-	font-size: clamp(10px, 2vw, 16px);
+	font-size: clamp(8px, 2vh, 14px);
 	text-align: center;
 	line-height: 1.4;
 	width: 100%;
@@ -732,13 +733,13 @@ clip-path: inherit;
 
 .selection-message-title {
 	margin-bottom: 0.6em;
-	font-size: 1.15em;
+	font-size: 0.8em;
 	text-decoration: underline;
 }
 
 .selection-message-subtitle {
 	color: rgba(255, 255, 255, 0.8);
-	font-size: 0.95em;
+	font-size: 0.8em;
 	line-height: 1.4;
 }
 
@@ -767,7 +768,7 @@ clip-path: inherit;
 	border-radius: 4px;
 	box-shadow: none;
 	transition: all 0.2s ease-in-out;
-	font-size: 1em;
+	font-size: 0.8em;
 }
 
 .skill-button:disabled {
@@ -785,13 +786,13 @@ clip-path: inherit;
 	color: #fff;
 	margin-bottom: 0.5em;
 	text-align: left;
-	font-size: 1em;
+	font-size: 0.8em;
 	font-weight: bold;
 }
 
 .skill-description {
 	color: rgba(255, 255, 255, 0.7);
-	font-size: 0.95em;
+	font-size: 0.8em;
 	line-height: 1.4;
 	text-align: left;
 }
