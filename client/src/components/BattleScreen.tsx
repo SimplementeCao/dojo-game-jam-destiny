@@ -981,15 +981,15 @@ export default function BattleScreen() {
                     }
                   }}
                 >
-                   {!hasAction && (
-                    <div className="action-text-glow">
-                      ACTION
-                    </div>
-                  )}
                   <div 
                     className={(isSelectedHero || shouldHighlightAsTarget) ? 'character-glow-white' : ''}
                     style={{ position: 'relative', display: 'inline-block' }}
                   >
+                    {!hasAction && (
+                      <div className="action-text-glow">
+                        ACTION
+                      </div>
+                    )}
                     <img
                       src={`/characters/character_${status.character_id}_${
                         characterAnimations[status.character_id] === 'hit' ? 'hit' :

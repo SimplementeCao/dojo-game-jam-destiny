@@ -112,18 +112,3 @@
   }
 }
 
-@media (max-width: 768px) {
-  .titulo-text {
-    font-size: clamp(35px, 5vw, 100px);
-    letter-spacing: 1px;
-    -webkit-text-stroke: 1px #ffffff;
-  }
-  
-  .press-start {
-    font-size: 18px;
-  }
-  
-  .title-banner {
-    margin: -8vh 0 0 0;
-  }
-}
