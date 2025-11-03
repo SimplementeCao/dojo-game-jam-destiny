@@ -1,4 +1,4 @@
-# 🎮 DESTINY
+# DESTINY
 
 ### Submission Track
 
@@ -6,7 +6,7 @@
 
 ### Project Summary
 
-**DESTINY** is a fully on-chain turn-based RPG battle game built on **Starknet** using the **Dojo framework**. The game combines classic strategic RPG mechanics with blockchain capabilities, offering a decentralized gaming experience where all actions are recorded on-chain.
+**DESTINY** is a fully on-chain turn-based RPG battle game built on **Starknet** using the **Dojo**.
 
 **Key Features:**
 - **Turn-Based Battle System**: Strategic combat with 7 unique heroes and multiple monster types
@@ -16,8 +16,6 @@
 - **Rich Audio System**: Background music and 11 unique sound effects for immersive gameplay
 - **Pixel-Art Visuals**: Beautiful animated characters with idle, hit, and damage animations
 - **Advanced Combat Mechanics**: Critical hits, evasion, defense calculations, and status effects
-- **Interactive UI**: Hover system to view detailed character stats and skills
-- **Event-Driven Architecture**: Real-time visual feedback for all battle events
 
 The game features a complete progression system, balanced combat mechanics, and polished UI/UX with visual and audio feedback for every action.
 
@@ -25,19 +23,21 @@ The game features a complete progression system, balanced combat mechanics, and 
 
 https://dojo-destiny.vercel.app/
 
-### Youtube demo gameplay 
+### Github repository
+
+https://github.com/SimplementeCao/dojo-game-jam-destiny
+
+### Gameplay 
 https://youtu.be/d0ZMfTjpQ28
 
 #### Getting Started
 1. **Connect Your Wallet**: 
-   - Connect your Starknet wallet (Cartridge, Argent, or Braavos recommended)
-   - The connection sound will play when you connect
+   - Connect with Controller
 
 2. **Select a Level**:
    - Level 1 is unlocked from the start
    - Levels 2 and 3 unlock after completing the previous level
    - Click on a level card to start the battle
-   - Level difficulty is shown with color-coded labels (Green: Easy, Yellow: Medium, Red: Hard)
 
 #### Battle Mechanics
 1. **Select Your Hero**: Click on any hero from the bottom row to select them
@@ -68,7 +68,6 @@ https://youtu.be/d0ZMfTjpQ28
 
 6. **Victory Conditions**:
    - Defeat all monsters to win the battle
-   - Complete all 3 levels to fully complete the game!
 
 ### Team members
 - twitter [@simplementecao](https://x.com/simplementecao/)
